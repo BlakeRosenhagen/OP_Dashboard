@@ -197,7 +197,6 @@ def build_graphA1(mode):
             textposition = "inside",
             textinfo = "value+percent total"))
 
-        #fig.show()
         graph = dcc.Graph(figure = fig )
         
         return graph
@@ -252,4 +251,7 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
                           size=12,
                           color="#000000"
                         ))
-    return fig
+    
+    graph = dcc.Graph(figure = fig)
+
+    return graph

@@ -74,6 +74,7 @@ def set_optionsA1(available_options):
      dash.dependencies.Input('dropdownA3numgroup', 'value'),
      dash.dependencies.Input('dropdownA3group','value')])
 def set_display_children(agg_method, numerical_group,group):
+    #return "ag{}nu{}gr{}df{}".format(agg_method,numerical_group,group,type(df_num))
     graph = build_graphA3(agg_method, numerical_group, group,df_num)
     return graph
 
