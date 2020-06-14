@@ -22,16 +22,16 @@ df, df_num, df_noncumun_whole, noncumun_dfs = get_data()
 nav = Navbar()
 
 #-------------------------------------------------------------------------------------
-optionsA1scale = [{'label': "By Branch", 'value': "By Branch"},
+optionsA2scale = [{'label': "By Branch", 'value': "By Branch"},
 {'label': "A Whole", 'value': "As Whole"}]
 
-dropdownA1scale = html.Div(dcc.Dropdown(
-    id='dropdownA1scale',
-    options=optionsA1scale,
+dropdownA2scale = html.Div(dcc.Dropdown(
+    id='dropdownA2scale',
+    options=optionsA2scale,
     value='By Branch'
 ))
 
-outputA1 = html.Div(id='outputA1',
+outputA2 = html.Div(id='outputA2',
                   children=[],
                   )
 
@@ -64,18 +64,17 @@ outputA3 = html.Div(id='outputA3',children=[],)
 body = html.Div([
     dbc.Row([
         dbc.Col([
-            dropdownA1scale,
-            outputA1 
-        ],md=6),
-        dbc.Col([
             dbc.Row([
 
             ]),
             dbc.Row([
                 
             ]),
-            
-        ]),
+        ],md=6),
+        dbc.Col([
+            dropdownA2scale,
+            outputA2 
+        ],md=6),
     ]),
     dbc.Row([
         dbc.Col([
@@ -89,10 +88,10 @@ body = html.Div([
                 dbc.Col([
                     dropdownA3group,
                 ]),
+            ]),
             dbc.Row([
                 outputA3
-                ])
-            ]),
+                ],justify="center", align="center")
         ]),
     ]),
 ])
@@ -113,7 +112,7 @@ body = html.Div([
 
 
 
-def App():
+def AppA():
     layout = html.Div([
         nav,
         body,
@@ -139,7 +138,7 @@ def build_graph(city):
     return graph
 """
 
-def build_graphA1(mode):
+def build_graphA2(mode):
     if mode == "By Branch":
         stage_list = ["Discovery (S.P.I.N.)","Solution Development","Quoting","Working","On Hold","Won"]
         fig = go.Figure()
@@ -241,7 +240,9 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
                                  name=t))
 
     fig.update_layout(title = "{} of {} grouped by {}".format(agg_method,numerical_group,group),
-                      barmode='stack', 
+                      barmode='stack',
+                      width=1400,
+                      height=500,
                       xaxis={'categoryorder':'category ascending'},
                       legend_title_text= group,
                       xaxis_title="Date",
