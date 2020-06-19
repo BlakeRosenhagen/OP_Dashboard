@@ -5,7 +5,7 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 from prep import get_data
-from app import AppA, build_graphA2, build_graphA3
+from app import AppA, build_graphA1, build_graphA2, build_graphA3
 from homepage import Homepage
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
@@ -29,7 +29,20 @@ def display_page(pathname):
         return Homepage()
 
 
+
+
 #A1
+@app.callback(
+    dash.dependencies.Output('outputA1', 'children'),
+    [dash.dependencies.Input('dropdownA1structure', 'value'),
+     dash.dependencies.Input('radioA1astages', 'value'),
+     dash.dependencies.Input('radioA1anumerical','value')])
+def update_graphA1(path_mode, included, numerical):
+    graph = build_graphA1(path_mode, included, numerical, df_num)
+    return graph
+
+
+#A2
 @app.callback(
     Output('outputA2', 'children'),
     [Input('dropdownA2scale', 'value')]

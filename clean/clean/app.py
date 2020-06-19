@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 # Graphing
 import plotly.graph_objects as go
+import plotly.express as px
 # Dash
 import dash
 import dash_core_components as dcc
@@ -21,6 +22,41 @@ df, df_num, df_noncumun_whole, noncumun_dfs = get_data()
 
 nav = Navbar()
 
+#COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS 
+#-------------------------------------------------------------------------------------
+
+structure_options = ['Proportions of Branches Stage group',
+                    'Proportions of Branches by OAM by Stage group',
+                    'Proportions of Stage group by OAM',
+                    'Proportions of Stage group by Customer']
+
+interactiveA1 = html.Div([
+    dcc.Dropdown(id='dropdownA1structure',
+        options=[{'label':k, 'value':k} for k in structure_options],
+        value='Proportions of Branches Stage group'),
+    dcc.Dropdown(id='radioA1astages',
+                    options=[
+                        {'label': 'All', 'value': 'All'},
+                        {'label': 'W vs L', 'value': 'W vs L'},
+                        {'label': 'W vs O vs L', 'value': 'W vs O vs L'}
+                    ],
+                    value = 'All',
+                    labelStyle={'display': 'inline-block'},
+                    className="dcc_control",
+                    ),
+    dcc.RadioItems(id='radioA1anumerical',
+                    options=[
+                        {'label': 'Sum', 'value': 'Sum'},
+                        {'label': 'Count', 'value': 'Count'},
+                    ],
+                    value = 'Sum',
+                    labelStyle={'display': 'inline-block'},
+                    className="dcc_control",
+                    ),
+])
+
+outputA1 = html.Div(id='outputA1', children=[],)
+
 #-------------------------------------------------------------------------------------
 optionsA2scale = [{'label': "By Branch", 'value': "By Branch"},
 {'label': "A Whole", 'value': "As Whole"}]
@@ -31,9 +67,7 @@ dropdownA2scale = html.Div(dcc.Dropdown(
     value='By Branch'
 ))
 
-outputA2 = html.Div(id='outputA2',
-                  children=[],
-                  )
+outputA2 = html.Div(id='outputA2',children=[],)
 
 #-------------------------------------------------------------------------------------
 
@@ -45,8 +79,8 @@ all_options = {
     'count':["PotentialValue"]
 }
 
-group_options = ['Div','Branch','OAM','LeadType','LeadSpecifics',
-                'Customer','Type','New','City, St','KeyVendor','Stage','UpdateDate']
+group_options = ['Div','Branch','OAM','LeadType','Customer',
+    'Type','New','City, St','KeyVendor','Stage','UpdateDate']
 
 
 dropdownA3agg = dcc.Dropdown(id='dropdownA3agg', options=[{'label': k, 'value': k} for k in all_options.keys()],value='sum')
@@ -59,16 +93,13 @@ dropdownA3group = dcc.Dropdown(id='dropdownA3group',
 
 outputA3 = html.Div(id='outputA3',children=[],)
 #-------------------------------------------------------------------------------------
-
-
+#LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT 
 body = html.Div([
     dbc.Row([
         dbc.Col([
             dbc.Row([
-
-            ]),
-            dbc.Row([
-                
+                dbc.Col([interactiveA1],width=6),
+                dbc.Col([outputA1],width=6),
             ]),
         ],md=6),
         dbc.Col([
@@ -99,19 +130,6 @@ body = html.Div([
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 def AppA():
     layout = html.Div([
         nav,
@@ -120,28 +138,57 @@ def AppA():
 
     return layout
 
-"""
-def build_graph(city):
-    data = [go.Scatter(x=df.index,
-                       y=df[city],
-                       marker={'color': 'orange'})]
-    graph = dcc.Graph(
-        figure={
-            'data': data,
-            'layout': go.Layout(
-                title='{} Population Change'.format(city),
-                yaxis={'title': 'Population'},
-                hovermode='closest'
-            )
-        }
-    )
+
+#GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH 
+
+
+def build_graphA1(path_mode, included, numerical, df_num):
+    values = 'PotentialValue' if numerical == 'Sum' else [1]*len(df_num)
+    dff = df_num
+    if included == 'All':
+        dff = df_num
+    elif included == 'Win vs Lose':
+        dff= df_num[df_num["Stage"].isin(['Won','Lost (why?)'])]
+    elif included == 'Win vs Ongoing vs Lose':
+        dff = df_num
+        dff["Stage"] = df_num["Stage"].replace(['Quoting','Discovery (S.P.I.N.)','Working',
+                                    'On Hold','Solution Development'], 'Ongoing')
+    
+    if path_mode == 'Proportions of Branches Stage group':
+        fig = px.sunburst(data_frame = dff, path=['Branch','Stage'], values=values, color='Stage')
+        title = "Proportions of Branches by {} according to {}".format(included, numerical)
+    elif path_mode == 'Proportions of Branches by OAM by Stage group':
+        fig = px.sunburst(data_frame = dff, path=['Branch','OAM','Stage'], values=values, color='Stage')
+        title = "Proportions of Branches by OAM by {} according to {}".format(included, numerical)
+    elif path_mode == 'Proportions of Stage group by OAM':
+        fig = px.sunburst(data_frame = dff, path=['Stage','OAM'], values=values, color='Stage')
+        title = "Proportions of {} by OAM according to {}".format(included, numerical)
+    elif path_mode == 'Proportions of Stage group by Customer':
+        fig = px.sunburst(data_frame = dff, path=['Stage','Customer'], values=values, color='Stage')
+        title="Proportions of OAM by {} according to {}".format(included, numerical)
+
+
+    
+
+    fig.update_layout(title = title,
+                    width=700,
+                    height=700,
+                    font=dict(
+                        #family="Courier New, monospace",
+                        size=12,
+                        color="#000000"
+                            )
+                    )
+    graph = dcc.Graph(figure = fig )
+        
     return graph
-"""
+
+
 
 def build_graphA2(mode):
+    fig = go.Figure()
     if mode == "By Branch":
         stage_list = ["Discovery (S.P.I.N.)","Solution Development","Quoting","Working","On Hold","Won"]
-        fig = go.Figure()
         fig.add_trace(go.Funnel(
             name = 'Austin',
             y = stage_list,
@@ -204,7 +251,6 @@ def build_graphA2(mode):
 
     elif mode == "As Whole":
         stage_list = ["Discovery (S.P.I.N.)","Solution Development","Quoting","Working","On Hold","Won"]
-        fig = go.Figure()
         fig.add_trace(go.Funnel(
             name = 'Whole',
             y = stage_list,
@@ -241,7 +287,7 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
 
     fig.update_layout(title = "{} of {} grouped by {}".format(agg_method,numerical_group,group),
                       barmode='stack',
-                      width=1400,
+                      width=1750,
                       height=500,
                       xaxis={'categoryorder':'category ascending'},
                       legend_title_text= group,
