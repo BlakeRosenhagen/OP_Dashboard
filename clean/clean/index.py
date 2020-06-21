@@ -5,10 +5,12 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 from prep import get_data
-from app import AppA, build_graphA1, build_graphA2, build_graphA3
-from homepage import Homepage
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
+from homepage import Homepage
+from appA import AppA, build_graphA1, build_graphA2, build_graphA3
+from appB import AppB
+
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 
 app.config.suppress_callback_exceptions = True
 
@@ -23,8 +25,10 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
             [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/pipe-dreams':
+    if pathname == '/Pipe-dreams':
         return AppA()
+    if pathname == '/Scattergories':
+        return AppB()
     else:
         return Homepage()
 

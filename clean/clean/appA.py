@@ -41,7 +41,7 @@ interactiveA1 = html.Div([
                         {'label': 'W vs O vs L', 'value': 'W vs O vs L'}
                     ],
                     value = 'All',
-                    labelStyle={'display': 'inline-block'},
+                    #labelStyle={'display': 'inline-block'},
                     className="dcc_control",
                     ),
     dcc.RadioItems(id='radioA1anumerical',
@@ -50,7 +50,7 @@ interactiveA1 = html.Div([
                         {'label': 'Count', 'value': 'Count'},
                     ],
                     value = 'Sum',
-                    labelStyle={'display': 'inline-block'},
+                    #labelStyle={'display': 'inline-block'},
                     className="dcc_control",
                     ),
 ])
@@ -98,14 +98,14 @@ body = html.Div([
     dbc.Row([
         dbc.Col([
             dbc.Row([
-                dbc.Col([interactiveA1],width=6),
-                dbc.Col([outputA1],width=6),
+                dbc.Col([interactiveA1],width=3),
+                dbc.Col([outputA1],width=9),
             ]),
-        ],md=6),
+        ],width=6),
         dbc.Col([
             dropdownA2scale,
             outputA2 
-        ],md=6),
+        ],width=6),
     ]),
     dbc.Row([
         dbc.Col([
@@ -171,8 +171,8 @@ def build_graphA1(path_mode, included, numerical, df_num):
     
 
     fig.update_layout(title = title,
-                    width=700,
-                    height=700,
+#                    width=700,
+#                   height=700,
                     font=dict(
                         #family="Courier New, monospace",
                         size=12,
@@ -242,6 +242,8 @@ def build_graphA2(mode):
             x = [noncumun_dfs["Houston OEM"].loc[i,"PV_sum"] for i in stage_list],
             textposition = "inside",
             textinfo = "value+percent total"))
+        
+        title = "Sales Funnel by Branch"
 
         graph = dcc.Graph(figure = fig )
         
@@ -256,6 +258,8 @@ def build_graphA2(mode):
             y = stage_list,
             x = [df_noncumun_whole.loc[i,"PV_sum"] for i in stage_list],
             textinfo = "value+percent initial"))
+
+        title = "Sales Funnel as Whole"
 
         graph = dcc.Graph(figure = fig)
 
@@ -287,15 +291,15 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
 
     fig.update_layout(title = "{} of {} grouped by {}".format(agg_method,numerical_group,group),
                       barmode='stack',
-                      width=1750,
-                      height=500,
+                      width=1400,
+                      height=600,
                       xaxis={'categoryorder':'category ascending'},
                       legend_title_text= group,
                       xaxis_title="Date",
                       yaxis_title="{} {}".format(numerical_group, agg_method),
                       font=dict(
                           #family="Courier New, monospace",
-                          size=12,
+                          size=14,
                           color="#000000"
                         ))
     
