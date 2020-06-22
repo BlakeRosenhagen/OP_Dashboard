@@ -34,7 +34,7 @@ def display_page(pathname):
 
 
 
-
+#appA appA appA appA appA appA appA appA appA appA appA appA appA appA
 #A1
 @app.callback(
     dash.dependencies.Output('outputA1', 'children'),
@@ -97,27 +97,20 @@ def update_graphA3(agg_method, numerical_group,group):
     graph = build_graphA3(agg_method, numerical_group, group,df_num)
     return graph
 
-#@app.callback(
-#    Output(),
-#    [Input()]
 
-
-
-#@app.callback(
-#    Output(),
-#    [Input()]
-
-
-
-
-
-
+#appB appB appB appB appB appB appB appB appB appB appB appB appB appB appB
 
 
 #@app.callback(
-#    Output('indicator-graphic', 'figure'),
-#    [Input('xaxis-column', 'value'),
-#     Input('xaxis-type', 'value')])
+#    Output("number-out", "children"),
+#    [Input("", "value"),]
+
+@app.callback(
+    dash.dependencies.Output('dropdownBdimension', 'options'),
+    [dash.dependencies.Input('checklistB', 'value')])
+def set_optionsBdimension(checked):
+    return [{'label': i, 'value': i} for i in checked]
+
 
 
 
@@ -128,3 +121,66 @@ if __name__ == '__main__':
     app.run_server(debug=True)
 
 
+
+
+
+
+
+
+
+
+
+
+"""
+#@app.callback(
+#    dash.dependencies.Output('sliderBx', 'children'),
+#    [dash.dependencies.Input('dropdownBx', 'options')])
+#def set_optionsBx(options):
+#    selected = options[0]['value']
+#    max_value = df_num[selected].max()
+#    rangesliderx = html.Div([
+#        dcc.RangeSlider(
+#            id = 'sliderBxx',
+#            min=0,
+#            max=max_value,
+#            step=max_value / 100,
+#            marks={
+#                0: '0',
+#                max_value *(1/4) : '{}'.format(str(max_value/4)), #'{}'.format(max_value *(1/4)),
+#                max_value *(2/4) : '{}'.format(str(max_value *(2/4))),
+#                max_value *(3/4) : '{}'.format(str(max_value *(3/4))),
+#                max_value  : '{}'.format(str(max_value)),
+#            },
+#            value=[0,max_value]
+#        )
+#    ])
+#    return rangesliderx
+
+
+
+
+@app.callback(Output(component_id='sliderBx', component_property='min'),
+               Output(component_id='sliderBx', component_property='max'),
+               Output(component_id='sliderBx', component_property='step'),
+               #Output(component_id='sliderBx', component_property='marks')
+               [Input(component_id='dropdownBx', component_property='options')])
+def set_optionsBx(options):
+    selected = options[0]['value']
+    max_value = df_num[selected].max()
+
+    minimum = 0
+    maximum = max_value
+    step = max_value / 100
+    
+    return minimum, maximum, step
+    
+
+
+
+
+@app.callback(
+    dash.dependencies.Output('dropdownA3numgroup', 'value'),
+    [dash.dependencies.Input('dropdownA3numgroup', 'options')])
+def set_optionsA3b(available_options):
+    return available_options[0]['value']
+"""

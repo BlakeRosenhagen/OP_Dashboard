@@ -24,21 +24,39 @@ nav = Navbar()
 
 #COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS 
 #-------------------------------------------------------------------------------------
+
+dropdown_options = ["PotentialValue", "ProbPercent", "ExpectedValue", "EOD_delta"]
+
+group_options = ['New','LeadType','Type','Branch', 'Stage','OAM']
+
+
+
 left_band = html.Div([
-    dcc.RangeSlider(
-    min=0,
-    max=10,
-    step=None,
-    marks={
-        0: '0 °F',
-        3: '3 °F',
-        5: '5 °F',
-        7.65: '7.65 °F',
-        10: '10 °F'
-    },
-    value=[3, 7.65]
-)  
-])
+    dcc.Dropdown(id='dropdownBx', options=[{'label': i, 'value': i} for i in dropdown_options],value='PotentialValue'),
+    dcc.Input(id="inputBxmin", type="number", placeholder="Minimum"),
+    dcc.Input(id="inputBxmax", type="number", placeholder="Maximum"),
+
+    dcc.Dropdown(id='dropdownBy', options=[{'label': i, 'value': i} for i in dropdown_options],value='PotentialValue'),
+    
+    dcc.Input(id="inputBymin", type="number", placeholder="Minimum"),
+    dcc.Input(id="inputBymax", type="number", placeholder="Maximum"),
+
+    dcc.Checklist(
+        id = 'checklistB',
+        options=[ {'label':i, 'value':i} for i in group_options],
+        value=['New','Type',"Branch"]),
+    
+    #html.P("Select Dimension")
+    dcc.Dropdown(id='dropdownBdimension'),
+
+    ])
+
+
+
+
+
+
+
 
 left_graphs = []
 
