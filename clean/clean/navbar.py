@@ -6,6 +6,7 @@ def Navbar():
            children=[
               dbc.NavItem(dbc.NavLink("Pipe-Dream", href="/Pipe-dreams")),
               dbc.NavItem(dbc.NavLink("Scattergories", href="/Scattergories")),
+              dbc.NavItem(dbc.NavLink("Interact", href="/Interact")),
               dbc.DropdownMenu(
                  nav=True,
                  in_navbar=True,

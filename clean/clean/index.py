@@ -3,12 +3,16 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
+import dash_daq as daq
+
 
 from prep import get_data
 
 from homepage import Homepage
 from appA import AppA, build_graphA1, build_graphA2, build_graphA3
-from appB import AppB
+from appB import AppB, core_layoutB
+
+from interact import AppC
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 
@@ -29,6 +33,8 @@ def display_page(pathname):
         return AppA()
     if pathname == '/Scattergories':
         return AppB()
+    if pathname == '/Interact':
+        return AppC()
     else:
         return Homepage()
 
@@ -114,7 +120,16 @@ def set_optionsBdimension(checked):
 
 
 
+@app.callback(
+    dash.dependencies.Output("layout_output", 'children'),
+    [dash.dependencies.Input('toggle', 'value')])
+def update_layout(value):
+    body1, body2 = core_layoutB()
 
+    if value == False:
+        return body1
+    if value == True:
+        return body2
 
 
 if __name__ == '__main__':

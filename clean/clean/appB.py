@@ -10,6 +10,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
+import dash_daq as daq
 # Sub Modules
 from navbar import Navbar
 from prep import get_data
@@ -29,9 +30,30 @@ dropdown_options = ["PotentialValue", "ProbPercent", "ExpectedValue", "EOD_delta
 
 group_options = ['New','LeadType','Type','Branch', 'Stage','OAM']
 
+def core_layoutB():
+    body1 = html.Div([
+        dbc.Col([dcc.Markdown("""left graph""")], 
+        width=6),
+        dbc.Col([
+            dbc.Row([dcc.Markdown("""top right graph""")]),
+            dbc.Row([dcc.Markdown("""bottom right graph""")]),
+            ],width=6),
+    ])
 
+    body2 = html.Div([
+        dbc.Row([dcc.Markdown("""top graph""")]),
+        dbc.Row([
+            dbc.Col([dcc.Markdown("""bottom left graph""")],
+            width=6),
+            dbc.Col([dcc.Markdown("""bottom right graph""")],
+            width=6),
+        ]),
+    ])
+
+    return body1, body2
 
 left_band = html.Div([
+    daq.ToggleSwitch(id='toggle',value=False),
     dcc.Dropdown(id='dropdownBx', options=[{'label': i, 'value': i} for i in dropdown_options],value='PotentialValue'),
     dcc.Input(id="inputBxmin", type="number", placeholder="Minimum"),
     dcc.Input(id="inputBxmax", type="number", placeholder="Maximum"),
@@ -52,24 +74,22 @@ left_band = html.Div([
     ])
 
 
-
-
-
-
-
-
 left_graphs = []
 
 right_top_graph = []
 
 right_bottom_graph = []
+
+
+switch_layout = html.Div(id="layout_output", children=[],)
 #-------------------------------------------------------------------------------------
 #LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT 
 
 
 body = html.Div([
-    dbc.Col([left_band]),
-    dbc.Col([]),
+    dbc.Col([left_band], width=2),
+#    dbc.Col([dcc.Markdown("""hop[e""")]),
+    dbc.Col([dbc.Row([switch_layout],),],width=10),
     dbc.Col([])
 ])
 
