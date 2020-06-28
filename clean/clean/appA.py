@@ -93,6 +93,17 @@ dropdownA3group = dcc.Dropdown(id='dropdownA3group',
 
 outputA3 = html.Div(id='outputA3',children=[],)
 #-------------------------------------------------------------------------------------
+styles = {
+    'pre': {
+        'border': 'thin lightgrey solid',
+        'overflowX': 'scroll'
+    }
+}
+
+
+
+
+
 #LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT 
 body = html.Div([
     dbc.Row([
@@ -107,6 +118,15 @@ body = html.Div([
             outputA2 
         ],width=6),
     ]),
+    dbc.Row([
+        html.Div(className='row', children=[
+            html.Div([
+                html.P("""testing"""),
+                html.Pre(id='selected-data', style=styles['pre']),
+            ])
+            #], className='three columns'),
+        ]),
+    ],justify="center", align="center"),
     dbc.Row([
         dbc.Col([
             dbc.Row([
@@ -125,7 +145,15 @@ body = html.Div([
                 ],justify="center", align="center")
         ]),
     ]),
+    dbc.Row([
+        #html.Div(className='row', children=[
+         #   html.Div([
+          #      html.P("""testing""")
+           #     #html.Pre(id='selected-data', style=styles['pre']),
+            #], className='three columns'),
+        ])
 ])
+
 
 
 
@@ -335,6 +363,6 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
 
     
     
-    graph = dcc.Graph(figure = fig)
+    graph = dcc.Graph(id='timeline', figure = fig) #could add on id property
 
     return graph
