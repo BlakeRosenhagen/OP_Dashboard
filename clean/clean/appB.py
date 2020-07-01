@@ -18,18 +18,46 @@ from datafilter import filter_data_master
 
 df, df_num, df_noncumun_whole, noncumun_dfs = get_data()
 
-#df = pd.read_csv('https://gist.githubusercontent.com/joelsewhere/f75da35d9e0c7ed71e5a93c10c52358d/raw/d8534e2f25495cc1de3cd604f952e8cbc0cc3d96/population_il_cities.csv')
-#df.set_index(df.iloc[:, 0], drop=True, inplace=True)
-#df = df.iloc[:, 1:]
-
 nav = Navbar()
 
 #COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS 
 #-------------------------------------------------------------------------------------
 
+switch = html.Div([
+    dbc.Col([dcc.Input(id="inputBPVmin", type="number", placeholder="PV Min")]),
+    dbc.Col([dcc.Input(id="inputBPVmax", type="number", placeholder="PV Max")]),
+    dbc.Col([dcc.Input(id="inputBPPmin", type="number", placeholder="PP Min")]),
+    dbc.Col([dcc.Input(id="inputBPPmax", type="number", placeholder="PP Max")]),
+    dbc.Col([daq.ToggleSwitch(id='toggle',value=False)]),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")]),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Max")]),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")]),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Max")]),
+    ])
+
+
+
+
 dropdown_options = ["PotentialValue", "ProbPercent", "ExpectedValue", "EOD_delta"]
 
+dcc.Dropdown(id='dropdownBAx', options=[{'label': i, 'value': i} for i in dropdown_options],value='PotentialValue')
+
+dcc.Dropdown(id='dropdownBAy', options=[{'label': i, 'value': i} for i in dropdown_options],value='PotentialValue')
+
+
 group_options = ['New','LeadType','Type','Branch', 'Stage','OAM']
+
+checklistBA = dcc.Checklist(
+        id = 'checklistBA',
+        options=[ {'label':i, 'value':i} for i in group_options],
+        value=['New','Type',"Branch"]),
+
+
+
+
+
+
+
 
 def core_layoutB():
     body1 = html.Div([
@@ -71,9 +99,6 @@ def core_layoutB():
         dbc.Col([],width=2), #right band
     ])
 
-
-
-
     return body1, body2
 
 
@@ -99,16 +124,6 @@ left_band = html.Div([
     #html.P("Select Dimension")
     dcc.Dropdown(id='dropdownBdimension'),
 
-    ])
-
-switch = html.Div([
-    dbc.Col([daq.ToggleSwitch(id='toggle',value=False)]),
-    dbc.Col([dcc.Input(id="inputBPVmin", type="number", placeholder="PV Min")]),
-    dbc.Col([dcc.Input(id="inputBPVmax", type="number", placeholder="PV Max")]),
-    dbc.Col([dcc.Input(id="inputBPPmin", type="number", placeholder="PP Min")]),
-    dbc.Col([dcc.Input(id="inputBPPmax", type="number", placeholder="PP Max")]),
-    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")]),
-    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Max")]),
     ])
 
 switch_layout = html.Div(id="layout_output", children=[],)
@@ -141,12 +156,13 @@ def AppB():
 
 def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
 
-    dff = filter_data_master(PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,dff):
+    dff = filter_data_master(PV_min,PV_max,PP_min,PP_max,EV_min,EV_max,EOD_min,EOD_max,df_num):
 
-    dimensions = [dict(values=cars_df[label], label=label) for label in categorical_dimensions]
+
+    dimensions = [dict(values=dff[label], label=label) for label in categorical_dimensions]
 
     # Build colorscale
-    color = np.zeros(len(cars_df), dtype='uint8')
+    color = np.zeros(len(dff), dtype='uint8')
     colorscale = [[0, 'gray'], [1, 'firebrick']]
 
     # Build figure as FigureWidget
@@ -160,14 +176,9 @@ def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,cat
         ])
 
     fig.update_layout(
-            height=800, xaxis={'title': 'Horsepower'},
-            yaxis={'title': 'MPG', 'domain': [0.6, 1]},
-            dragmode='lasso', hovermode='closest',
-            margin=dict(l=0, r=0, t=0, b=0),
-                    #aper_bgcolor="lightcyan",
-                    #lot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black)
-                    )
-
+            height=800, xaxis={'title': '{}'.format(x_axis)},
+            yaxis={'title': '{}'.format(y_axis), 'domain': [0.6, 1]},
+            dragmode='lasso', hovermode='closest',)
 
     # Update color callback
     def update_color(trace, points, state):
@@ -175,7 +186,7 @@ def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,cat
         fig.data[0].selectedpoints = points.point_inds
 
         # Update parcats colors
-        new_color = np.zeros(len(cars_df), dtype='uint8')
+        new_color = np.zeros(len(dff), dtype='uint8')
         new_color[points.point_inds] = 1
         fig.data[1].line.color = new_color
 
@@ -183,6 +194,12 @@ def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,cat
     fig.data[0].on_selection(update_color)
     # and parcats click
     fig.data[1].on_click(update_color)
+
+    fig.update_layout(
+        margin=dict(l=0, r=15, t=0, b=10),
+        #paper_bgcolor="lightcyan",
+        #plot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+    )
 
     graph = dcc.Graph(id='scatterparcat', figure = fig) #could add on id property
 

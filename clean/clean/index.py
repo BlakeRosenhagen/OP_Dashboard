@@ -128,6 +128,19 @@ def update_layout(value):
 
 
 
+
+@app.callback(
+    Output('outputBA1'),
+    [Input("inputBPVmin", "value"), Input("inputBPVmax", "value"),
+    Input("inputBPPmin", "value"), Input("inputBPPmax", "value"),
+    Input("inputBEVmin", "value"), Input("inputBEVmax", "value"),
+    Input("inputBEODmin", "value"), Input("inputBEODmax", "value"),
+    Input("checklistB", "value")]
+)
+def update_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
+    _graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
+
+
 @app.callback(
     dash.dependencies.Output('outputBA2', 'children'),
     [dash.dependencies.Input('dropdownA1structure', 'value'),

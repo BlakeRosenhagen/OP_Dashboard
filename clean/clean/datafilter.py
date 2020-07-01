@@ -32,8 +32,8 @@ def value_none(value):
     return value
 
 
-def filter_data_master(PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,dff):
-    for v in [PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max]:
+def filter_data_master(PV_min,PV_max,PP_min,PP_max,EV_min,EV_max,EOD_min,EOD_max,dff):
+    for v in [PV_min,PV_max,PP_min,PP_max,EV_min,EV_max,EOD_min,EOD_max]:
         value_none(v)
     
     PV_min = value_none(PV_min)
@@ -46,5 +46,6 @@ def filter_data_master(PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,dff):
 
     dff1 = df_filter(dff,'PotentialValue',PV_min,PV_min)
     dff2 = df_filter(dff1,'ProbPercent',PP_min,PP_max)
-    dff3 = df_filter(dff2,'EOD_delta',EOD_min,EOD_max)
-    return dff3
+    dff3 = df_filter(dff2,'ExpectedValue',EV_min,EV_max)
+    dff4 = df_filter(dff3,'EOD_delta',EOD_min,EOD_max)
+    return dff4
