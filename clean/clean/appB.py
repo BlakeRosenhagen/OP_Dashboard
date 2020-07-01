@@ -14,6 +14,7 @@ import dash_daq as daq
 # Sub Modules
 from navbar import Navbar
 from prep import get_data
+from datafilter import filter_data_master
 
 df, df_num, df_noncumun_whole, noncumun_dfs = get_data()
 
@@ -52,8 +53,35 @@ def core_layoutB():
 
     return body1, body2
 
+
+
+def core_layoutB():
+    body1 = html.Div([
+        dbc.Col([],width=2), #left band
+        dbc.Col([
+            dbc.Row([
+                dbc.Col([],width=7), #scatterparcat
+                dbc.Col([
+                    dbc.Row([]), #pie charts
+                    dbc.Row([]), # 3d-scatter
+                ],width=5),
+            ]),
+            dbc.Row([]), # datatable or plotly table
+        ],width=8), 
+        dbc.Col([],width=2), #right band
+    ])
+
+
+
+
+    return body1, body2
+
+
+
+
+
+
 left_band = html.Div([
-    daq.ToggleSwitch(id='toggle',value=False),
     dcc.Dropdown(id='dropdownBx', options=[{'label': i, 'value': i} for i in dropdown_options],value='PotentialValue'),
     dcc.Input(id="inputBxmin", type="number", placeholder="Minimum"),
     dcc.Input(id="inputBxmax", type="number", placeholder="Maximum"),
@@ -73,13 +101,15 @@ left_band = html.Div([
 
     ])
 
-
-left_graphs = []
-
-right_top_graph = []
-
-right_bottom_graph = []
-
+switch = html.Div([
+    dbc.Col([daq.ToggleSwitch(id='toggle',value=False)]),
+    dbc.Col([dcc.Input(id="inputBPVmin", type="number", placeholder="PV Min")]),
+    dbc.Col([dcc.Input(id="inputBPVmax", type="number", placeholder="PV Max")]),
+    dbc.Col([dcc.Input(id="inputBPPmin", type="number", placeholder="PP Min")]),
+    dbc.Col([dcc.Input(id="inputBPPmax", type="number", placeholder="PP Max")]),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")]),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Max")]),
+    ])
 
 switch_layout = html.Div(id="layout_output", children=[],)
 #-------------------------------------------------------------------------------------
@@ -88,7 +118,9 @@ switch_layout = html.Div(id="layout_output", children=[],)
 
 body = html.Div([
     dbc.Col([left_band], width=2),
-#    dbc.Col([dcc.Markdown("""hop[e""")]),
+#    dbc.Col([dcc.Markdown("""hop[e""")]
+
+),
     dbc.Col([dbc.Row([switch_layout],),],width=10),
     dbc.Col([])
 ])
@@ -97,10 +129,86 @@ body = html.Div([
 def AppB():
     layout = html.Div([
         nav,
-        body,
+        switch,
+        switch_layout,
     ])
 
     return layout
 
 
 #GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH 
+
+
+def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
+
+    dff = filter_data_master(PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,dff):
+
+    dimensions = [dict(values=cars_df[label], label=label) for label in categorical_dimensions]
+
+    # Build colorscale
+    color = np.zeros(len(cars_df), dtype='uint8')
+    colorscale = [[0, 'gray'], [1, 'firebrick']]
+
+    # Build figure as FigureWidget
+    fig = go.FigureWidget(
+        data=[go.Scatter(x=dff[x_axis], y=dff[y_axis],
+        marker={'color': 'gray'}, mode='markers', selected={'marker': {'color': 'firebrick'}},
+        unselected={'marker': {'opacity': 0.3}}), go.Parcats(
+            domain={'y': [0, 0.4]}, dimensions=dimensions,
+            line={'colorscale': colorscale, 'cmin': 0,
+                'cmax': 1, 'color': color, 'shape': 'hspline'})
+        ])
+
+    fig.update_layout(
+            height=800, xaxis={'title': 'Horsepower'},
+            yaxis={'title': 'MPG', 'domain': [0.6, 1]},
+            dragmode='lasso', hovermode='closest',
+            margin=dict(l=0, r=0, t=0, b=0),
+                    #aper_bgcolor="lightcyan",
+                    #lot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black)
+                    )
+
+
+    # Update color callback
+    def update_color(trace, points, state):
+        # Update scatter selection
+        fig.data[0].selectedpoints = points.point_inds
+
+        # Update parcats colors
+        new_color = np.zeros(len(cars_df), dtype='uint8')
+        new_color[points.point_inds] = 1
+        fig.data[1].line.color = new_color
+
+    # Register callback on scatter selection...
+    fig.data[0].on_selection(update_color)
+    # and parcats click
+    fig.data[1].on_click(update_color)
+
+    graph = dcc.Graph(id='scatterparcat', figure = fig) #could add on id property
+
+    return graph
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def build_graphBA2(group, numerical, dff):
+    if numerical == "Count": values = [1]*len(dff)
+    elif numerical == "Sum": values = 'PotentialValue'
+    fig = px.pie(dff, values=values, names=group,
+                    title='Proportion',
+                )#hover_data=['PotentialValue'], labels={'lifeExp':'life expectancy'})
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+    
+    graph = dcc.Graph(figure = fig )
+        
+    return graph

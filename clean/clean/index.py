@@ -1,17 +1,18 @@
 import json
+#Dash
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import dash_daq as daq
-
-
+import dash_table
+#Sub Modules
 from prep import get_data
 
 from homepage import Homepage
-from appA import AppA, build_graphA1, build_graphA2, build_graphA3
-from appB import AppB, core_layoutB
+from appA import AppA, build_graphA1, build_graphA2, build_graphA3, split_filter_part
+from appB import AppB, core_layoutB, build_graphBA2
 
 from interact import AppC
 
@@ -46,7 +47,7 @@ def display_page(pathname):
 @app.callback(
     dash.dependencies.Output('outputA1', 'children'),
     [dash.dependencies.Input('dropdownA1structure', 'value'),
-     dash.dependencies.Input('radioA1astages', 'value'),
+     dash.dependencies.Input('dropdownA1astages', 'value'),
      dash.dependencies.Input('radioA1anumerical','value')])
 def update_graphA1(path_mode, included, numerical):
     graph = build_graphA1(path_mode, included, numerical, df_num)
@@ -107,18 +108,11 @@ def update_graphA3(agg_method, numerical_group,group):
 
 #appB appB appB appB appB appB appB appB appB appB appB appB appB appB appB
 
-
-#@app.callback(
-#    Output("number-out", "children"),
-#    [Input("", "value"),]
-
 @app.callback(
     dash.dependencies.Output('dropdownBdimension', 'options'),
     [dash.dependencies.Input('checklistB', 'value')])
 def set_optionsBdimension(checked):
     return [{'label': i, 'value': i} for i in checked]
-
-
 
 
 @app.callback(
@@ -133,17 +127,107 @@ def update_layout(value):
         return body2
 
 
-#Interact
+
 @app.callback(
-    Output('selected-data', 'children'),
-    [Input('timeline', 'selectedData')])
-def display_selected_data(selectedData):
-    if selectedData:
-        return json.dumps(selectedData, indent=2)
-    if not selectedData:
-        return "didnt work"
+    dash.dependencies.Output('outputBA2', 'children'),
+    [dash.dependencies.Input('dropdownA1structure', 'value'),
+     dash.dependencies.Input('dropdownA1astages', 'value'),
+     dash.dependencies.Input('radioA1anumerical','value')])
 
 
+
+
+#Interact
+
+#@app.callback(
+ #   Output('selected-data', 'children'),
+  #  [Input('timeline', 'selectedData')])
+#def display_selected_data(selectedData):
+ #   idlist = []
+  #  for i in selectedData['points']:
+   #     idlist.append(i['customdata'])
+    #idlist = [val for sublist in idlist for val in sublist]
+    #df_table = df_num[df_num.index.isin(idlist)]
+    
+   # if selectedData:
+    #    return json.dumps(selectedData, indent=2)
+    #if not selectedData:
+    #    return "didnt work"
+
+
+
+@app.callback(
+    Output('A4', 'children'),
+    [Input('datatableA4', "page_current"),
+     Input('datatableA4', "page_size"),
+     Input('datatableA4', 'sort_by'),
+     Input('datatableA4', 'filter_query'),
+     Input('timeline', 'selectedData')])
+def update_table(page_current, page_size, sort_by, filter, selectedData):
+    idlist = []
+    for i in selectedData['points']:
+        idlist.append(i['customdata'])
+    idlist = [val for sublist in idlist for val in sublist]
+    dff =  df_num[df_num.index.isin(idlist)]
+    
+    dff = df_num
+
+    filtering_expressions = filter.split(' && ')
+    for filter_part in filtering_expressions:
+        col_name, operator, filter_value = split_filter_part(filter_part)
+
+        if operator in ('eq', 'ne', 'lt', 'le', 'gt', 'ge'):
+            # these operators match pandas series operator method names
+            dff = dff.loc[getattr(dff[col_name], operator)(filter_value)]
+        elif operator == 'contains':
+            dff = dff.loc[dff[col_name].str.contains(filter_value)]
+        elif operator == 'datestartswith':
+            # this is a simplification of the front-end filtering logic,
+            # only works with complete fields in standard format
+            dff = dff.loc[dff[col_name].str.startswith(filter_value)]
+
+    if len(sort_by):
+        dff = dff.sort_values(
+            [col['column_id'] for col in sort_by],
+            ascending=[
+                col['direction'] == 'asc'
+                for col in sort_by
+            ],
+            inplace=False
+        )
+
+    page = page_current
+    size = page_size
+
+
+
+    data= dff.iloc[page * size: (page + 1) * size].to_dict('records')
+
+
+    PAGE_SIZE = 5
+
+    datatableA4 = html.Div([dash_table.DataTable(
+        id='datatableA4',
+        columns=[
+            {'name': i, 'id': i, 'deletable': True} for i in sorted(df_num.columns)
+        ],
+        data=data,
+        page_current= 0,
+        page_size= PAGE_SIZE,
+        page_action='custom',
+
+        filter_action='custom',
+        filter_query='',
+
+        sort_action='custom',
+        sort_mode='multi',
+        sort_by=[]
+        )
+    ])
+
+
+
+    return datatableA4 #json.dumps(dff.iloc[page * size: (page + 1) * size].to_dict('records'), indent=4, sort_keys=True, default=str)
 
 
 

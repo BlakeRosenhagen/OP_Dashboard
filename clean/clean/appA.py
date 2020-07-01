@@ -10,6 +10,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
+import dash_table
 # Sub Modules
 from navbar import Navbar
 from prep import get_data
@@ -34,7 +35,7 @@ interactiveA1 = html.Div([
     dcc.Dropdown(id='dropdownA1structure',
         options=[{'label':k, 'value':k} for k in structure_options],
         value='Proportions of Branches Stage group'),
-    dcc.Dropdown(id='radioA1astages',
+    dcc.Dropdown(id='dropdownA1astages',
                     options=[
                         {'label': 'All', 'value': 'All'},
                         {'label': 'W vs L', 'value': 'W vs L'},
@@ -93,6 +94,11 @@ dropdownA3group = dcc.Dropdown(id='dropdownA3group',
 
 outputA3 = html.Div(id='outputA3',children=[],)
 #-------------------------------------------------------------------------------------
+
+
+datatable = html.Div(id="A4", children=[],)
+
+#-------------------------------------------------------------------------------------
 styles = {
     'pre': {
         'border': 'thin lightgrey solid',
@@ -118,11 +124,14 @@ body = html.Div([
             outputA2 
         ],width=6),
     ]),
+
+            
     dbc.Row([
         html.Div(className='row', children=[
             html.Div([
                 html.P("""testing"""),
                 html.Pre(id='selected-data', style=styles['pre']),
+                datatable
             ])
             #], className='three columns'),
         ]),
@@ -175,9 +184,9 @@ def build_graphA1(path_mode, included, numerical, df_num):
     dff = df_num
     if included == 'All':
         dff = df_num
-    elif included == 'Win vs Lose':
+    if included == 'Win vs Lose':
         dff= df_num[df_num["Stage"].isin(['Won','Lost (why?)'])]
-    elif included == 'Win vs Ongoing vs Lose':
+    if included == 'Win vs Ongoing vs Lose':
         dff = df_num
         dff["Stage"] = df_num["Stage"].replace(['Quoting','Discovery (S.P.I.N.)','Working',
                                     'On Hold','Solution Development'], 'Ongoing')
@@ -195,9 +204,6 @@ def build_graphA1(path_mode, included, numerical, df_num):
         fig = px.sunburst(data_frame = dff, path=['Stage','Customer'], values=values, color='Stage')
         title="Proportions of OAM by {} according to {}".format(included, numerical)
 
-
-    
-
     fig.update_layout(title = title,
 #                    width=700,
 #                   height=700,
@@ -207,6 +213,13 @@ def build_graphA1(path_mode, included, numerical, df_num):
                         color="#000000"
                             )
                     )
+
+    fig.update_layout(
+            margin=dict(l=0, r=0, t=30, b=20),
+            paper_bgcolor='lightcyan',
+            #plot_bgcolor='gainsboro' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+        )
+
     graph = dcc.Graph(figure = fig )
         
     return graph
@@ -274,7 +287,23 @@ def build_graphA2(mode):
         title = "Sales Funnel by Branch"
 
         graph = dcc.Graph(figure = fig )
-        
+
+        fig.update_layout(title = title,
+#                    width=700,
+#                   height=700,
+                    font=dict(
+                        #family="Courier New, monospace",
+                        size=12,
+                        color="#000000"
+                            )
+                    )
+
+        fig.update_layout(
+            margin=dict(l=5, r=5, t=30, b=25),
+            paper_bgcolor="lightcyan",
+            #plot_bgcolor='gainsboro' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+        )
+
         return graph
 
 
@@ -289,6 +318,22 @@ def build_graphA2(mode):
 
         title = "Sales Funnel as Whole"
 
+        fig.update_layout(title = title,
+#                    width=700,
+#                   height=700,
+                    font=dict(
+                        #family="Courier New, monospace",
+                        size=12,
+                        color="#000000"
+                            )
+                    )
+
+        fig.update_layout(
+            margin=dict(l=5, r=5, t=30, b=25),
+            paper_bgcolor="lightcyan",
+            #plot_bgcolor='gainsboro' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+        )
+
         graph = dcc.Graph(figure = fig)
 
         return graph
@@ -301,20 +346,59 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
         df_num = df_num[df_num["ExpectedOrderDate"] >= pd.to_datetime('2020-1-1')]
 
         if agg_method == "sum":
+            Ys= df_num[df_num[group]==t].groupby("ExpectedOrderDate").sum()[[numerical_group]]
+            Xs = Ys.index
+            customdata = []
+            for date in Ys.index:
+                dff = df_num[(df_num["ExpectedOrderDate"] == date) & (df_num[group] == t)]
+                customdata.append([i for i in dff.index])
             fig.add_trace(go.Bar(x=df_num[df_num[group]==t].groupby("ExpectedOrderDate").sum()[[numerical_group]].index,
                                  y=list(df_num[df_num[group]==t].groupby("ExpectedOrderDate").sum()[numerical_group]),
+                                 customdata=customdata,#[t]*len(df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[[numerical_group]].index),
                                  name=t))
         if agg_method == "mean":
+            Ys= df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[[numerical_group]]
+            Xs = Ys.index
+            customdata = []
+            for date in Ys.index:
+                dff = df_num[(df_num["ExpectedOrderDate"] == date) & (df_num[group] == t)]
+                customdata.append([i for i in dff.index])
             fig.add_trace(go.Bar(x=df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[[numerical_group]].index,
                                  y=list(df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[numerical_group]),
+                                 customdata=customdata,#[t]*len(df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[[numerical_group]].index),
                                  name=t))
         if agg_method == "median":
+            Ys= df_num[df_num[group]==t].groupby("ExpectedOrderDate").median()[[numerical_group]]
+            Xs = Ys.index
+            customdata = []
+            for date in Ys.index:
+                dff = df_num[(df_num["ExpectedOrderDate"] == date) & (df_num[group] == t)]
+                customdata.append([i for i in dff.index])
             fig.add_trace(go.Bar(x=df_num[df_num[group]==t].groupby("ExpectedOrderDate").median()[[numerical_group]].index,
                                  y=list(df_num[df_num[group]==t].groupby("ExpectedOrderDate").median()[numerical_group]),
+                                 customdata=customdata,#[t]*len(df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[[numerical_group]].index),
                                  name=t))
         if agg_method == "std":
+            Ys= df_num[df_num[group]==t].groupby("ExpectedOrderDate").std()[[numerical_group]]
+            Xs = Ys.index
+            customdata = []
+            for date in Ys.index:
+                dff = df_num[(df_num["ExpectedOrderDate"] == date) & (df_num[group] == t)]
+                customdata.append([i for i in dff.index])
             fig.add_trace(go.Bar(x=df_num[df_num[group]==t].groupby("ExpectedOrderDate").std()[[numerical_group]].index,
                                  y=list(df_num[df_num[group]==t].groupby("ExpectedOrderDate").std()[numerical_group]),
+                                 customdata=customdata,#[t]*len(df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[[numerical_group]].index),
+                                 name=t))
+        if agg_method == "count":
+            Ys= df_num[df_num[group]==t].groupby("ExpectedOrderDate").count()[[numerical_group]]
+            Xs = Ys.index
+            customdata = []
+            for date in Ys.index:
+                dff = df_num[(df_num["ExpectedOrderDate"] == date) & (df_num[group] == t)]
+                customdata.append([i for i in dff.index])
+            fig.add_trace(go.Bar(x=df_num[df_num[group]==t].groupby("ExpectedOrderDate").count()[[numerical_group]].index,
+                                 y=list(df_num[df_num[group]==t].groupby("ExpectedOrderDate").count()[numerical_group]),
+                                 customdata=customdata,#[t]*len(df_num[df_num[group]==t].groupby("ExpectedOrderDate").mean()[[numerical_group]].index),
                                  name=t))
 
     fig.update_layout(title = "{} of {} grouped by {}".format(agg_method,numerical_group,group),
@@ -330,6 +414,12 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
                           size=14,
                           color="#000000"
                         ))
+
+    fig.update_layout(
+    #margin=dict(l=0, r=0, t=0, b=0),
+    paper_bgcolor="lightcyan",
+    plot_bgcolor='gainsboro' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+    )
 
     fig.update_layout(
         xaxis=dict(
@@ -361,8 +451,40 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
         ),
     )
 
-    
-    
     graph = dcc.Graph(id='timeline', figure = fig) #could add on id property
 
     return graph
+
+
+#A4
+operators = [['ge ', '>='],
+             ['le ', '<='],
+             ['lt ', '<'],
+             ['gt ', '>'],
+             ['ne ', '!='],
+             ['eq ', '='],
+             ['contains '],
+             ['datestartswith ']]
+
+def split_filter_part(filter_part):
+    for operator_type in operators:
+        for operator in operator_type:
+            if operator in filter_part:
+                name_part, value_part = filter_part.split(operator, 1)
+                name = name_part[name_part.find('{') + 1: name_part.rfind('}')]
+
+                value_part = value_part.strip()
+                v0 = value_part[0]
+                if (v0 == value_part[-1] and v0 in ("'", '"', '`')):
+                    value = value_part[1: -1].replace('\\' + v0, v0)
+                else:
+                    try:
+                        value = float(value_part)
+                    except ValueError:
+                        value = value_part
+
+                # word operators need spaces after them in the filter string,
+                # but we don't want these later
+                return name, operator_type[0].strip(), value
+
+    return [None] * 3
