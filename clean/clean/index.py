@@ -12,7 +12,7 @@ from prep import get_data
 
 from homepage import Homepage
 from appA import AppA, build_graphA1, build_graphA2, build_graphA3, split_filter_part
-from appB import AppB, core_layoutB, build_graphBA2
+from appB import AppB, core_layoutB, build_graphBA1, build_graphBA2, build_graphBA3
 
 from interact import AppC
 
@@ -109,7 +109,7 @@ def update_graphA3(agg_method, numerical_group,group):
 #appB appB appB appB appB appB appB appB appB appB appB appB appB appB appB
 
 @app.callback(
-    dash.dependencies.Output('dropdownBdimension', 'options'),
+    dash.dependencies.Output('dropdownBAdimension', 'options'),
     [dash.dependencies.Input('checklistB', 'value')])
 def set_optionsBdimension(checked):
     return [{'label': i, 'value': i} for i in checked]
@@ -138,7 +138,35 @@ def update_layout(value):
     Input("checklistB", "value")]
 )
 def update_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
-    _graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
+     graph = build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
+     return graph
+
+
+
+
+
+
+
+
+
+@app.callback(
+    Output('outputBA3'),
+    [Input("inputBPVmin", "value"), Input("inputBPVmax", "value"),
+    Input("inputBPPmin", "value"), Input("inputBPPmax", "value"),
+    Input("inputBEVmin", "value"), Input("inputBEVmax", "value"),
+    Input("inputBEODmin", "value"), Input("inputBEODmax", "value"),
+    ]
+)
+def update_graphBA3(color_sel,size_sel,symbol_sel,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max):
+
+    graph = build_graphBA3(color_sel,size_sel,symbol_sel,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max)
+    
+    return graph
+
+
+
+
+
 
 
 @app.callback(
