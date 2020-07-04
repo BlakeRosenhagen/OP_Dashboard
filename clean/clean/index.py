@@ -142,7 +142,14 @@ def update_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,ca
      return graph
 
 
-
+@app.callback(
+    Output('outputBA2'),
+    [Input('radioBA2group','value'),
+    Input('radioBA2numerical','value')]
+)
+def update_graphBA2(group_sel, numerical):
+    graph = build_graphBA2(group_sel, numerical)
+    return graph
 
 
 

@@ -53,14 +53,31 @@ checklistBA = dcc.Checklist(
 
 dropdownBAdimension = dcc.Dropdown(id='dropdownBAdimension', children=[],)
 
+outputBA1 = html.Div(id='outputBA1', children=[],)
+
+radioBA2group = dcc.RadioItems(options=[id='radioBA2group'
+    {'label': 'Positional/Source Info', 'value': 'Positional/Source Info'},
+    {'label': 'Customer/Vendor Info', 'value': 'Customer/Vendor Info'}],
+    value='Positional/Source Info'
+)
+radioBA2numerical = dcc.RadioItems(options=[id='radioBA2numerical'
+    {'label': 'Count', 'value': 'Count'},
+    {'label': 'PV Sum', 'value': 'PV Sum'},
+    {'label': 'EV Sum', 'value': 'EV Sum'}],
+    value='Count'
+)
+
+outputBA2 = html.Div(id='outputBA2', children=[],)
 
 dropdown_optionsBA3color = ["None",'New','Type','Branch','LeadType','Stage', 'PotentialValue','ProbPercent','EOD_delta']
 dropdown_optionsBA3size = ["None",'New','Type','Branch','LeadType','Stage', 'PotentialValue','ProbPercent','EOD_delta']
 dropdown_optionsBA3symbol = ["None",'New','Type','Branch','LeadType','Stage']
 
-dropdownBAx = dcc.Dropdown(id='dropdownBA', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3color],value='Branch')
-dropdownBAx = dcc.Dropdown(id='dropdownBAx', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3size],value='None')
-dropdownBAx = dcc.Dropdown(id='dropdownBAx', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3symbol],value='New')
+dropdownBAcolor = dcc.Dropdown(id='dropdownBA3color', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3color],value='Branch')
+dropdownBAsize = dcc.Dropdown(id='dropdownBA3size', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3size],value='None')
+dropdownBAsymbol = dcc.Dropdown(id='dropdownBA3symbol', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3symbol],value='New')
+
+outputBA3 = html.Div(id='outputBA3', children=[],)
 
 
 
@@ -70,7 +87,11 @@ dropdownBAx = dcc.Dropdown(id='dropdownBAx', options=[{'label': i, 'value': i} f
 
 
 
-def core_layoutB():
+
+
+
+
+def ccore_layoutB():
     body1 = html.Div([
         dbc.Col([dcc.Markdown("""left graph""")], 
         width=6),
@@ -112,8 +133,10 @@ def core_layoutB():
             ]),
             dbc.Row([]), # datatable or plotly table
         ],width=8), 
-        dbc.Col([],width=2), #right band
+        dbc.Col([dropdownBAcolor,dropdownBAsize,dropdownBAsymbol],width=2), #right band
     ])
+
+    body2 = html.Div([])
 
     return body1, body2
 
@@ -183,17 +206,111 @@ def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,cat
     return graph
 
 
-def build_graphBA2(group, numerical, dff):
-    if numerical == "Count": values = [1]*len(dff)
-    elif numerical == "Sum": values = 'PotentialValue'
-    fig = px.pie(dff, values=values, names=group,
-                    title='Proportion',
-                )#hover_data=['PotentialValue'], labels={'lifeExp':'life expectancy'})
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    
-    graph = dcc.Graph(figure = fig )
-        
+def build_graphBA2(group_sel, numerical):
+
+    dff = df_num
+
+    # Define color sets of paintings
+    night_colors = ['rgb(56, 75, 126)', 'rgb(18, 36, 37)', 'rgb(34, 53, 101)',
+                    'rgb(36, 55, 57)', 'rgb(6, 4, 4)']
+    sunflowers_colors = ['rgb(177, 127, 38)', 'rgb(205, 152, 36)', 'rgb(99, 79, 37)',
+                        'rgb(129, 180, 179)', 'rgb(124, 103, 37)']
+    irises_colors = ['rgb(33, 75, 99)', 'rgb(79, 129, 102)', 'rgb(151, 179, 100)',
+                    'rgb(175, 49, 35)', 'rgb(36, 73, 147)']
+    cafe_colors =  ['rgb(146, 123, 21)', 'rgb(177, 180, 34)', 'rgb(206, 206, 40)',
+                    'rgb(175, 51, 21)', 'rgb(35, 36, 21)']
+
+    color_dict = {'Branch':['greenyellow', 'orange', 'hotpink', 'darkgreen','cyan','brown','blueviolet'],
+                'LeadType':['yellow','darkgoldenrod','aqua','blue','blueviolet','darkgreen','aliceblue','lawngreen'],
+                'Type':['Orange','green','cyan','violet'],
+                'New':['cadetblue', 'burlywood', 'brown'],
+                'Stage':['palegoldenrod', 'forestgreen', 'paleturquoise','orange','brown', 'palegreen', 'fuchsia'],
+                'OAM':['orchid', 'palegoldenrod', 'palegreen', 'paleturquoise',
+                    'tomato', 'turquoise','violet', 'darkgreen', 'peru', 'pink',
+                    'plum', 'powderblue', 'purple', 'red', 'rosybrown',
+                    'royalblue', 'saddlebrown', 'salmon', 'sandybrown',
+                    'seagreen', 'seashell', 'gold', 'silver', 'skyblue',],
+                'KeyVendor':['beige', 'bisque', 'black', 'blanchedalmond', 'blue',
+                            'blueviolet', 'brown', 'burlywood', 'cadetblue',
+                            'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
+                            'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan',
+                            'darkgoldenrod', 'darkgray', 'darkgrey', 'darkgreen',
+                            'darkkhaki'],
+                "Customer": ['mediumturquoise', 'mediumvioletred', 'midnightblue',
+                            'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy',
+                            'oldlace', 'olive', 'olivedrab', 'orange', 'pink',
+                            'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise',
+                            'black', 'papayawhip', 'orange', 'peru', 'pink',
+                            'aliceblue', 'red', 'aqua', 'aquamarine', 'azure',
+                            'beige', 'bisque', 'black', 'blanchedalmond', 'blue',
+                            'blueviolet', 'brown', 'burlywood', 'cadetblue',
+                            'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
+                            'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan',
+                            'darkgoldenrod', 'darkgray', 'darkgrey', 'darkgreen',
+                            'darkkhaki']}
+                
+    # Create subplots, using 'domain' type for pie charts
+    specs = [[{'type':'domain'}, {'type':'domain'}],
+            [{'type':'domain'}, {'type':'domain'}],]
+    fig = make_subplots(rows=2, cols=2, specs=specs,horizontal_spacing=0,vertical_spacing=0.1)
+
+    groups1 = ["Branch","LeadType","OAM","Stage"] #Positional/Source Info
+
+    groups2 = ["Customer","KeyVendor","New","Type"] #Customer/Vendor Info
+
+    rowcol = {"1":(1,1), "2":(1,2),
+            "3":(2,1), "4":(2,2)}
+
+    groups = groups1 if group_sel == "Positional/Source Info" else groups2
+
+    if numerical == "Count":
+        for i,group in enumerate(groups):
+            fig.add_trace(go.Pie(labels=df_num[group].value_counts().sort_values(ascending=False).index,
+                                values=list(df_num["Stage"].value_counts().sort_values(ascending=False)), 
+                                name=group,
+                                title=group,
+                                marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
+    if numerical == "PV Sum":
+        fig.add_trace(go.Pie(labels=df_num.groupby("Stage").sum()["PotentialValue"].sort_values(ascending=False).index,
+                                values=list(df_num.groupby("Stage").sum()["PotentialValue"].sort_values(ascending=False)), 
+                                name=group,
+                                title=group,
+                                marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
+    if numerical == "EV Sum":
+        fig.add_trace(go.Pie(labels=df_num.groupby("Stage").sum()["ExpectedValue"].sort_values(ascending=False).index,
+                                values=list(df_num.groupby("Stage").sum()["ExpectedValue"].sort_values(ascending=False)), 
+                                name=group,
+                                title=group,
+                                marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
+
+
+    # Tune layout and hover info
+    fig.update_traces(hoverinfo='label+percent+name', textinfo='label+value')
+    fig.update(
+        layout_title_text='Positional/Source Info Pie Charts' if group_sel == "Positional/Source Info" else\
+                                        "Customer/Vendor Info",
+            layout_showlegend=False)
+
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=30,b=0),
+        #paper_bgcolor="lightcyan",
+        #plot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+    )
+    graph = dcc.Graph(id='fourpie', figure = fig)
+
     return graph
+
+#def build_graphBA2(group, numerical, dff):
+#    if numerical == "Count": values = [1]*len(dff)
+#    elif numerical == "Sum": values = 'PotentialValue'
+#    fig = px.pie(dff, values=values, names=group,
+#                    title='Proportion',
+#                )#hover_data=['PotentialValue'], labels={'lifeExp':'life expectancy'})
+#    fig.update_traces(textposition='inside', textinfo='percent+label')
+#    
+#    graph = dcc.Graph(figure = fig )
+#        
+#    return graph
 
 
 

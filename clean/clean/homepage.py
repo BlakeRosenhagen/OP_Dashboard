@@ -4,36 +4,46 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 from navbar import Navbar
+
+
+
+
+
+
+
+
+
+
 nav = Navbar()
 
-body = dbc.Container(
-    [
-       dbc.Row(
-           [
-               dbc.Col(
-                  [
-                     html.H2("Heading"),
-                     html.P(
-                         """\ 
-                         """
-                           ),
-                           dbc.Button("View details", color="secondary"),
-                   ],
-                  md=4,
-               ),
-              dbc.Col(
-                 [
-                     html.H2("Graph"),
-                     dcc.Graph(
-                         figure={"data": [{"x": [1, 2, 3], "y": [1, 4, 9]}]}
-                            ),
-                        ]
-                     ),
-                ]
-            )
-       ],
-className="mt-4",
-)
+
+
+
+
+
+
+
+
+
+body = dbc.Col([
+    dbc.Row([dcc.Upload([
+        'Drag and Drop or ',
+        html.A('Select a File')
+    ], style={
+        'width': '100%',
+        'height': '60px',
+        'lineHeight': '60px',
+        'borderWidth': '1px',
+        'borderStyle': 'dashed',
+        'borderRadius': '5px',
+        'textAlign': 'center'
+    })]),
+    dbc.Row([]),
+    dbc.Row([]),
+])
+
+
+
 
 def Homepage():
     layout = html.Div([
