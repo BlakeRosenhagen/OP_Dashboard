@@ -33,10 +33,10 @@ structure_options = ['Proportions of Branches Stage group',
                     'Proportions of Stage group by Customer']
 
 interactiveA1 = html.Div([
-    dcc.Dropdown(id='dropdownA1structure',
+    dcc.Dropdown(id='dropdownA1structurefake',
         options=[{'label':k, 'value':k} for k in structure_options],
         value='Proportions of Branches Stage group'),
-    dcc.Dropdown(id='dropdownA1astages',
+    dcc.Dropdown(id='dropdownA1astagesfake',
                     options=[
                         {'label': 'All', 'value': 'All'},
                         {'label': 'W vs L', 'value': 'W vs L'},
@@ -46,7 +46,7 @@ interactiveA1 = html.Div([
                     #labelStyle={'display': 'inline-block'},
                     className="dcc_control",
                     ),
-    dcc.RadioItems(id='radioA1anumerical',
+    dcc.RadioItems(id='radioA1anumericalfake',
                     options=[
                         {'label': 'Sum', 'value': 'Sum'},
                         {'label': 'Count', 'value': 'Count'},
@@ -57,19 +57,19 @@ interactiveA1 = html.Div([
                     ),
 ])
 
-outputA1 = html.Div(id='outputA1', children=[],)
+outputA1 = html.Div(id='outputA1fake', children=[],)
 
 #-------------------------------------------------------------------------------------
 optionsA2scale = [{'label': "By Branch", 'value': "By Branch"},
 {'label': "A Whole", 'value': "As Whole"}]
 
 dropdownA2scale = html.Div(dcc.Dropdown(
-    id='dropdownA2scale',
+    id='dropdownA2scalefake',
     options=optionsA2scale,
     value='By Branch'
 ))
 
-outputA2 = html.Div(id='outputA2',children=[],)
+outputA2 = html.Div(id='outputA2fake',children=[],)
 
 #-------------------------------------------------------------------------------------
 
@@ -85,19 +85,19 @@ group_options = ['Div','Branch','OAM','LeadType','Customer',
     'Type','New','City, St','KeyVendor','Stage','UpdateDate']
 
 
-dropdownA3agg = dcc.Dropdown(id='dropdownA3agg', options=[{'label': k, 'value': k} for k in all_options.keys()],value='sum')
+dropdownA3agg = dcc.Dropdown(id='dropdownA3aggfake', options=[{'label': k, 'value': k} for k in all_options.keys()],value='sum')
 
-dropdownA3numgroup = dcc.Dropdown(id='dropdownA3numgroup')
+dropdownA3numgroup = dcc.Dropdown(id='dropdownA3numgroupfake')
 
-dropdownA3group = dcc.Dropdown(id='dropdownA3group', 
+dropdownA3group = dcc.Dropdown(id='dropdownA3groupfake', 
                                options = [{'label': l, 'value': l} for l in group_options],
                                value='Type')
 
-outputA3 = html.Div(id='outputA3',children=[],)
+outputA3 = html.Div(id='outputA3fake',children=[],)
 #-------------------------------------------------------------------------------------
 
 
-datatable = html.Div(id="A4", children=[],)
+datatable = html.Div(id="A4fake", children=[],)
 
 #-------------------------------------------------------------------------------------
 styles = {
@@ -131,7 +131,7 @@ body = html.Div([
         html.Div(className='row', children=[
             html.Div([
                 html.P("""testing"""),
-                html.Pre(id='selected-data', style=styles['pre']),
+                html.Pre(id='selected-datafake', style=styles['pre']),
                 #datatable
             ])
             #], className='three columns'),
@@ -161,7 +161,7 @@ body = html.Div([
 
 
 
-def AppA():
+def AppB():
     layout = html.Div([
         nav,
         body,
@@ -171,7 +171,7 @@ def AppA():
 
 
 #GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH 
-def build_graphA1():
+def build_graphA1fake():
 
     
     
@@ -199,11 +199,11 @@ def build_graphA1():
         #plot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
     )
 
-    graph = dcc.Graph(id='scatter', figure = fig)
+    graph = dcc.Graph(id='scatterfake', figure = fig)
     
     return graph
 
-def build_graphA11(path_mode, included, numerical, df_num):
+def build_graphA11fake(path_mode, included, numerical, df_num):
     values = 'PotentialValue' if numerical == 'Sum' else [1]*len(df_num)
     dff = df_num
     if included == 'All':
@@ -250,7 +250,7 @@ def build_graphA11(path_mode, included, numerical, df_num):
 
 
 
-def build_graphA2(mode):
+def build_graphA2fake(mode):
     fig = go.Figure()
     if mode == "By Branch":
         stage_list = ["Discovery (S.P.I.N.)","Solution Development","Quoting","Working","On Hold","Won"]
@@ -363,7 +363,7 @@ def build_graphA2(mode):
         return graph
 
 
-def build_graphA3(agg_method, numerical_group, group, df_num):
+def build_graphA3fake(agg_method, numerical_group, group, df_num):
     fig = go.Figure()
     for t in df_num[group].unique():
         #for future filtering with date range
@@ -475,7 +475,7 @@ def build_graphA3(agg_method, numerical_group, group, df_num):
         ),
     )
 
-    graph = dcc.Graph(id='timeline', figure = fig) #could add on id property
+    graph = dcc.Graph(id='timelinefake', figure = fig) #could add on id property
 
     return graph
 

@@ -1,5 +1,3 @@
-
-
 import json
 # Data
 import pandas as pd
@@ -63,6 +61,14 @@ def AppC():
     return layout
 
 
+def build_graphC1():
+    df = px.data.iris()
+    fig = px.scatter(df, x="sepal_width", y="sepal_length", color="species", marginal_y="violin",
+            marginal_x="box", trendline="lowess", template="simple_white")
+
+    graph = dcc.Graph(figure=fig)
+    
+    return graph
 
 
 

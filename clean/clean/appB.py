@@ -1,9 +1,11 @@
 # Data
 import pandas as pd
 import pickle
+import numpy as np
 # Graphing
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.subplots import make_subplots
 # Dash
 import dash
 import dash_core_components as dcc
@@ -23,44 +25,45 @@ nav = Navbar()
 #COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS 
 #-------------------------------------------------------------------------------------
 # Top Components
-switch = html.Div([
-    dbc.Col([dcc.Input(id="inputBPVmin", type="number", placeholder="PV Min")]),
-    dbc.Col([dcc.Input(id="inputBPVmax", type="number", placeholder="PV Max")]),
-    dbc.Col([dcc.Input(id="inputBPPmin", type="number", placeholder="PP Min")]),
-    dbc.Col([dcc.Input(id="inputBPPmax", type="number", placeholder="PP Max")]),
-    dbc.Col([daq.ToggleSwitch(id='toggle',value=False)]),
-    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")]),
-    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Max")]),
-    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")]),
-    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Max")]),
-    ])
+switch = html.Div([dbc.Row([
+    dbc.Col([dcc.Input(id="inputBPVmin", type="number", placeholder="PV Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBPVmax", type="number", placeholder="PV Max")], width=1),
+    dbc.Col([dcc.Input(id="inputBPPmin", type="number", placeholder="PP Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBPPmax", type="number", placeholder="PP Max")], width=1),
+    dbc.Col([daq.ToggleSwitch(id='toggle',value=False)], width=4),
+    dbc.Col([dcc.Input(id="inputBEVmin", type="number", placeholder="EV Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBEVmax", type="number", placeholder="EV Max")], width=1),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBEODmax", type="number", placeholder="EOD Max")], width=1),
+    ])])
 
 
 # Layout A Components
 dropdown_optionsBA1 = ["PotentialValue", "ProbPercent", "ExpectedValue", "EOD_delta"]
 
-dropdownBAx = dcc.Dropdown(id='dropdownBAx', options=[{'label': i, 'value': i} for i in dropdown_optionsBA1],value='ProbPercent')
+dropdownBA1x = dcc.Dropdown(id='dropdownBA1x', options=[{'label': i, 'value': i} for i in dropdown_optionsBA1],value='ProbPercent')
 
-dropdownBAy = dcc.Dropdown(id='dropdownBAy', options=[{'label': i, 'value': i} for i in dropdown_optionsBA1],value='PotentialValue')
+dropdownBA1y = dcc.Dropdown(id='dropdownBA1y', options=[{'label': i, 'value': i} for i in dropdown_optionsBA1],value='PotentialValue')
 
 
 group_options = ['New','LeadType','Type','Branch', 'Stage','OAM']
 
-checklistBA = dcc.Checklist(
-        id = 'checklistBA',
-        options=[ {'label':i, 'value':i} for i in group_options],
-        value=['New','Type',"Branch"]),
+checklistBA1 = dcc.Checklist(
+        id = 'checklistBA1',
+        options=[{'label':i, 'value':i} for i in group_options],
+        value=["New"]),
 
-dropdownBAdimension = dcc.Dropdown(id='dropdownBAdimension', children=[],)
+
+
 
 outputBA1 = html.Div(id='outputBA1', children=[],)
 
-radioBA2group = dcc.RadioItems(options=[id='radioBA2group'
+radioBA2group = dcc.RadioItems(id='radioBA2group', options=[
     {'label': 'Positional/Source Info', 'value': 'Positional/Source Info'},
     {'label': 'Customer/Vendor Info', 'value': 'Customer/Vendor Info'}],
     value='Positional/Source Info'
 )
-radioBA2numerical = dcc.RadioItems(options=[id='radioBA2numerical'
+radioBA2numerical = dcc.RadioItems(id='radioBA2numerical', options=[
     {'label': 'Count', 'value': 'Count'},
     {'label': 'PV Sum', 'value': 'PV Sum'},
     {'label': 'EV Sum', 'value': 'EV Sum'}],
@@ -73,70 +76,103 @@ dropdown_optionsBA3color = ["None",'New','Type','Branch','LeadType','Stage', 'Po
 dropdown_optionsBA3size = ["None",'New','Type','Branch','LeadType','Stage', 'PotentialValue','ProbPercent','EOD_delta']
 dropdown_optionsBA3symbol = ["None",'New','Type','Branch','LeadType','Stage']
 
-dropdownBAcolor = dcc.Dropdown(id='dropdownBA3color', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3color],value='Branch')
-dropdownBAsize = dcc.Dropdown(id='dropdownBA3size', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3size],value='None')
-dropdownBAsymbol = dcc.Dropdown(id='dropdownBA3symbol', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3symbol],value='New')
+dropdownBA3color = dcc.Dropdown(id='dropdownBA3color', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3color],value='Branch')
+dropdownBA3size = dcc.Dropdown(id='dropdownBA3size', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3size],value='None')
+dropdownBA3symbol = dcc.Dropdown(id='dropdownBA3symbol', options=[{'label': i, 'value': i} for i in dropdown_optionsBA3symbol],value='New')
 
 outputBA3 = html.Div(id='outputBA3', children=[],)
 
-
-
-
 # Layout B Components
+dropdownBB1dimension = dcc.Dropdown(id='dropdownBB1dimension', children=[],)
 
 
 
 
 
 
-
-
-def ccore_layoutB():
-    body1 = html.Div([
-        dbc.Col([dcc.Markdown("""left graph""")], 
-        width=6),
-        dbc.Col([
-            dbc.Row([dcc.Markdown("""top right graph""")]),
-            dbc.Row([dcc.Markdown("""bottom right graph""")]),
-            ],width=6),
-    ])
-
-    body2 = html.Div([
-        dbc.Row([dcc.Markdown("""top graph""")]),
-        dbc.Row([
-            dbc.Col([dcc.Markdown("""bottom left graph""")],
-            width=6),
-            dbc.Col([dcc.Markdown("""bottom right graph""")],
-            width=6),
-        ]),
-    ])
-
-    return body1, body2
-
-
-
+# Layout Output
 switch_layout = html.Div(id="layout_output", children=[],)
 #-------------------------------------------------------------------------------------
 #LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT 
 
 
-def core_layoutB():
-    body1 = html.Div([
-        dbc.Col([],width=2), #left band
+body = html.Div([dbc.Row([
+        dbc.Col([dropdownBA1x,dropdownBA1y,*checklistBA1],width=2),
+        #dbc.Col([html.P("""middle section""")], width = 8),
         dbc.Col([
             dbc.Row([
-                dbc.Col([],width=7), #scatterparcat
+                dbc.Col([html.Div(id='outputBA4', children = []),outputBA1],width=7), #scatterparcat
                 dbc.Col([
-                    dbc.Row([]), #pie charts
-                    dbc.Row([]), # 3d-scatter
+                    dbc.Row([dbc.Col([outputBA2])]), #pie charts
+                    dbc.Row([dbc.Col([html.P(["""thgis is where the cube should be"""])]),dbc.Col([outputBA3])]), # 3d-scatter
                 ],width=5),
             ]),
             dbc.Row([]), # datatable or plotly table
         ],width=8), 
-        dbc.Col([dropdownBAcolor,dropdownBAsize,dropdownBAsymbol],width=2), #right band
+        dbc.Col([radioBA2group,
+                radioBA2numerical,
+                dropdownBA3color,
+                dropdownBA3size,
+                dropdownBA3symbol],width=2), #right band
     ])
+])
 
-    body2 = html.Div([])
+
+
+
+
+
+
+
+def core_layoutB():
+    body1 = html.Div([dbc.Row([
+        dbc.Col([dropdownBA1x,dropdownBA1y,*checklistBA1],width=2),
+        #dbc.Col([html.P("""middle section""")], width = 8),
+        dbc.Col([
+            dbc.Row([
+                dbc.Col([html.Div(id='outputBA4', children = []),outputBA1],width=7), #scatterparcat
+                dbc.Col([
+                    dbc.Row([dbc.Col([outputBA2])]), #pie charts
+                    dbc.Row([dbc.Col([outputBA3])]), # 3d-scatter
+                ],width=5),
+            ]),
+            dbc.Row([]), # datatable or plotly table
+        ],width=8), 
+        dbc.Col([radioBA2group,
+                radioBA2numerical,
+                dropdownBA3color,
+                dropdownBA3size,
+                dropdownBA3symbol],width=2), #right band
+        ])
+    ])
+    """
+    body1 = dbc.Row([
+        dbc.Col([dropdownBA1x,dropdownBA1y,*checklistBA1],width=2),
+        #dbc.Col([html.P(""""""middle section"""""")], width = 8),
+        dbc.Col([
+            dbc.Row([
+                dbc.Col([html.Div(id='outputBA4', children = [])],width=7), #scatterparcat
+                dbc.Col([
+                    dbc.Row([dbc.Col([outputBA2])]), #pie charts
+                    dbc.Row([dbc.Col([html.P([""""""thgis is where the cube should be""""""])]),dbc.Col([outputBA3])]), # 3d-scatter
+                ],width=5),
+            ]),
+            dbc.Row([]), # datatable or plotly table
+        ],width=8), 
+        dbc.Col([radioBA2group,
+                radioBA2numerical,
+                dropdownBA3color,
+                dropdownBA3size,
+                dropdownBA3symbol],width=2), #right band
+    ])
+    """
+    body2 = html.Div([
+        dbc.Row([
+            dbc.Col([outputBA1]),
+            dbc.Col([]),
+            dbc.Col([]),
+            ])
+    ])
 
     return body1, body2
 
@@ -145,6 +181,7 @@ def AppB():
     layout = html.Div([
         nav,
         switch,
+        #body,
         switch_layout,
     ])
 
@@ -152,48 +189,25 @@ def AppB():
 
 
 #GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH 
+def build_graphBA1():
 
+    x_axis ="ProbPercent"
 
-def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
+    y_axis= "PotentialValue"
 
-    dff = filter_data_master(PV_min,PV_max,PP_min,PP_max,EV_min,EV_max,EOD_min,EOD_max,df_num):
+    dff = df_num
+    fig = go.Figure()
 
-
-    dimensions = [dict(values=dff[label], label=label) for label in categorical_dimensions]
+    dimensions = [dict(values=dff[label], label=label) for label in ["New","Type"]]
 
     # Build colorscale
     color = np.zeros(len(dff), dtype='uint8')
     colorscale = [[0, 'gray'], [1, 'firebrick']]
 
-    # Build figure as FigureWidget
-    fig = go.FigureWidget(
-        data=[go.Scatter(x=dff[x_axis], y=dff[y_axis],
-        marker={'color': 'gray'}, mode='markers', selected={'marker': {'color': 'firebrick'}},
-        unselected={'marker': {'opacity': 0.3}}), go.Parcats(
-            domain={'y': [0, 0.4]}, dimensions=dimensions,
-            line={'colorscale': colorscale, 'cmin': 0,
-                'cmax': 1, 'color': color, 'shape': 'hspline'})
-        ])
+    fig.add_trace(go.Scatter(x=dff[x_axis], y=dff[y_axis],
+            marker={'color': 'gray'}, mode='markers', selected={'marker': {'color': 'firebrick'}},
+            unselected={'marker': {'opacity': 0.3}}))
 
-    fig.update_layout(
-            height=800, xaxis={'title': '{}'.format(x_axis)},
-            yaxis={'title': '{}'.format(y_axis), 'domain': [0.6, 1]},
-            dragmode='lasso', hovermode='closest',)
-
-    # Update color callback
-    def update_color(trace, points, state):
-        # Update scatter selection
-        fig.data[0].selectedpoints = points.point_inds
-
-        # Update parcats colors
-        new_color = np.zeros(len(dff), dtype='uint8')
-        new_color[points.point_inds] = 1
-        fig.data[1].line.color = new_color
-
-    # Register callback on scatter selection...
-    fig.data[0].on_selection(update_color)
-    # and parcats click
-    fig.data[1].on_click(update_color)
 
     fig.update_layout(
         margin=dict(l=0, r=15, t=0, b=10),
@@ -201,8 +215,37 @@ def build_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,cat
         #plot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
     )
 
-    graph = dcc.Graph(id='scatterparcat', figure = fig) #could add on id property
+    graph = dcc.Graph(id='scatter', figure = fig)
+    
+    return graph
 
+
+
+def build_graphBA111(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,categorical_dimensions):
+
+    dff = filter_data_master(None,None,None,None,None,None,None,None,df_num)#selectedData
+
+    fig = go.Figure()
+
+    dimensions = [dict(values=dff[label], label=label) for label in ["New","Type"]]
+
+    # Build colorscale
+    color = np.zeros(len(dff), dtype='uint8')
+    colorscale = [[0, 'gray'], [1, 'firebrick']]
+
+    fig.add_trace(go.Scatter(x=dff[x_axis], y=dff[y_axis],
+            marker={'color': 'gray'}, mode='markers', selected={'marker': {'color': 'firebrick'}},
+            unselected={'marker': {'opacity': 0.3}}))
+
+
+    fig.update_layout(
+        margin=dict(l=0, r=15, t=0, b=10),
+        #paper_bgcolor="lightcyan",
+        #plot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+    )
+
+    graph = dcc.Graph(id='scatter', figure = fig)
+    
     return graph
 
 
@@ -271,17 +314,19 @@ def build_graphBA2(group_sel, numerical):
                                 title=group,
                                 marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
     if numerical == "PV Sum":
-        fig.add_trace(go.Pie(labels=df_num.groupby("Stage").sum()["PotentialValue"].sort_values(ascending=False).index,
-                                values=list(df_num.groupby("Stage").sum()["PotentialValue"].sort_values(ascending=False)), 
-                                name=group,
-                                title=group,
-                                marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
+        for i,group in enumerate(groups):
+            fig.add_trace(go.Pie(labels=df_num.groupby("Stage").sum()["PotentialValue"].sort_values(ascending=False).index,
+                                    values=list(df_num.groupby("Stage").sum()["PotentialValue"].sort_values(ascending=False)), 
+                                    name=group,
+                                    title=group,
+                                    marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
     if numerical == "EV Sum":
-        fig.add_trace(go.Pie(labels=df_num.groupby("Stage").sum()["ExpectedValue"].sort_values(ascending=False).index,
-                                values=list(df_num.groupby("Stage").sum()["ExpectedValue"].sort_values(ascending=False)), 
-                                name=group,
-                                title=group,
-                                marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
+        for i,group in enumerate(groups):
+            fig.add_trace(go.Pie(labels=df_num.groupby("Stage").sum()["ExpectedValue"].sort_values(ascending=False).index,
+                                    values=list(df_num.groupby("Stage").sum()["ExpectedValue"].sort_values(ascending=False)), 
+                                    name=group,
+                                    title=group,
+                                    marker_colors=color_dict[group]), rowcol[str(i+1)][0], rowcol[str(i+1)][1])
 
 
     # Tune layout and hover info
@@ -300,23 +345,21 @@ def build_graphBA2(group_sel, numerical):
 
     return graph
 
-#def build_graphBA2(group, numerical, dff):
-#    if numerical == "Count": values = [1]*len(dff)
-#    elif numerical == "Sum": values = 'PotentialValue'
-#    fig = px.pie(dff, values=values, names=group,
-#                    title='Proportion',
-#                )#hover_data=['PotentialValue'], labels={'lifeExp':'life expectancy'})
-#    fig.update_traces(textposition='inside', textinfo='percent+label')
-#    
-#    graph = dcc.Graph(figure = fig )
-#        
-#    return graph
 
-
-
-def build_graphBA3(color_sel,size_sel,symbol_sel,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max):
+def build_graphBA3(color_sel,size_sel,symbol_sel,PV_min,PV_max,PP_min,PP_max,EV_min,EV_max,EOD_min,EOD_max):
     
-    dff = filter_data_master(PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,df_num):
+    dff = filter_data_master(PV_min,PV_max,PP_min,PP_max,EV_min,EV_max,EOD_min,EOD_max,df_num)
+
+    dff = df_num
+
+    def value_none(value):
+        if value == "None":
+            value = None
+        return value
+
+    color_sel = value_none(color_sel)
+    size_sel = value_none(size_sel)
+    symbol_sel = value_none(symbol_sel)
 
     if not color_sel and not symbol_sel:
         showlegend = True
@@ -332,7 +375,6 @@ def build_graphBA3(color_sel,size_sel,symbol_sel,PV_min,PV_max,PP_min,PP_max,EOD
             print("both active and not same")
             showlegend = False
 
-    df = px.data.iris()
     fig = px.scatter_3d(dff, x='ProbPercent', y='EOD_delta', z='PotentialValue',
                         color=color_sel,
                         size=size_sel, size_max=18,
@@ -359,7 +401,6 @@ def build_graphBA3(color_sel,size_sel,symbol_sel,PV_min,PV_max,PP_min,PP_max,EOD
             width=700,
             showlegend=showlegend)
     
-    fig.show()
-    #graph = dcc.Graph(figure = fig)
+    graph = dcc.Graph(id='scatter3d', figure = fig)
 
-    #return graph
+    return graph

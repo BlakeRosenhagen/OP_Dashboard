@@ -12,20 +12,34 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
 import dash_table
+import dash_daq as daq
 # Sub Modules
 from navbar import Navbar
 from prep import get_data
 
 df, df_num, df_noncumun_whole, noncumun_dfs = get_data()
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 
-#df = pd.read_csv('https://gist.githubusercontent.com/joelsewhere/f75da35d9e0c7ed71e5a93c10c52358d/raw/d8534e2f25495cc1de3cd604f952e8cbc0cc3d96/population_il_cities.csv')
-#df.set_index(df.iloc[:, 0], drop=True, inplace=True)
-#df = df.iloc[:, 1:]
+app.config.suppress_callback_exceptions = True
 
 nav = Navbar()
 
 #COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS COMPONENTS 
 #-------------------------------------------------------------------------------------
+switch = html.Div([dbc.Row([
+    dbc.Col([dcc.Input(id="inputBPVmin", type="number", placeholder="PV Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBPVmax", type="number", placeholder="PV Max")], width=1),
+    dbc.Col([dcc.Input(id="inputBPPmin", type="number", placeholder="PP Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBPPmax", type="number", placeholder="PP Max")], width=1),
+    dbc.Col([daq.ToggleSwitch(id='toggle',value=False)], width=4),
+    dbc.Col([dcc.Input(id="inputBEVmin", type="number", placeholder="EV Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBEVmax", type="number", placeholder="EV Max")], width=1),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Min")], width=1),
+    dbc.Col([dcc.Input(id="inputBEODmin", type="number", placeholder="EOD Max")], width=1),
+    ])])
+
+
+
 
 structure_options = ['Proportions of Branches Stage group',
                     'Proportions of Branches by OAM by Stage group',
@@ -158,17 +172,7 @@ body = html.Div([
 ])
 
 
-
-
-
-def AppA():
-    layout = html.Div([
-        nav,
-        body,
-    ])
-
-    return layout
-
+app.layout = html.Div([nav,switch,body])
 
 #GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH 
 def build_graphA1():
@@ -512,3 +516,69 @@ def split_filter_part(filter_part):
                 return name, operator_type[0].strip(), value
 
     return [None] * 3
+
+
+
+#A1
+@app.callback(
+    dash.dependencies.Output('outputA1', 'children'),
+    [dash.dependencies.Input('dropdownA1structure', 'value'),
+     dash.dependencies.Input('dropdownA1astages', 'value'),
+     dash.dependencies.Input('radioA1anumerical','value')])
+def update_graphA1(path_mode, included, numerical):
+    graph = build_graphA1()#path_mode, included, numerical, df_num)
+    return graph, "fdfs", 789
+
+#A2
+@app.callback(
+    Output('outputA2', 'children'),
+    [Input('dropdownA2scale', 'value')]
+)
+def update_graph(mode):
+    graph = build_graphA2(mode)
+    return graph
+
+
+#A3
+
+all_options = {
+    'sum': ["PotentialValue","ExpectedValue"],
+    'mean': ["PotentialValue","ExpectedValue","ProbPercent"],
+    'median': ["PotentialValue","ExpectedValue","ProbPercent"],
+    'std': ["PotentialValue","ExpectedValue","ProbPercent"],
+    'count':["PotentialValue"]
+}
+
+@app.callback(
+    dash.dependencies.Output('dropdownA3numgroup', 'options'),
+    [dash.dependencies.Input('dropdownA3agg', 'value')])
+def set_optionsA3a(selected_agg):
+    return [{'label': i, 'value': i} for i in all_options[selected_agg]]
+
+@app.callback(
+    dash.dependencies.Output('dropdownA3numgroup', 'value'),
+    [dash.dependencies.Input('dropdownA3numgroup', 'options')])
+def set_optionsA3b(available_options):
+    return available_options[0]['value']
+
+@app.callback(
+    dash.dependencies.Output('dropdownA3group', 'value'),
+    [dash.dependencies.Input('dropdownA3group', 'options')])
+def set_optionsA1c(available_options):
+        return available_options[0]['value']
+
+
+@app.callback(
+    dash.dependencies.Output('outputA3', 'children'),
+    [dash.dependencies.Input('dropdownA3agg', 'value'),
+     dash.dependencies.Input('dropdownA3numgroup', 'value'),
+     dash.dependencies.Input('dropdownA3group','value')])
+def update_graphA3(agg_method, numerical_group,group):
+    #return "ag{}nu{}gr{}df{}".format(agg_method,numerical_group,group,type(df_num))
+    graph = build_graphA3(agg_method, numerical_group, group,df_num)
+    return graph
+
+
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
