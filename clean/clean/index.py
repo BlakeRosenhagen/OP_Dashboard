@@ -142,15 +142,47 @@ def update_graphBA1(x_axis,y_axis,PV_min,PV_max,PP_min,PP_max,EOD_min,EOD_max,ca
 """
 
 
+
+
+
+
+
+@app.callback(
+    Output('clickdatatest', 'children'),
+    [Input('scatterA','clickData')]
+)
+def datatest1(clickData):
+    return json.dumps(clickData, indent=2)
+
+
+
+
+@app.callback(
+    Output('selectdatatest', 'children'),
+    [Input('scatterA','selectedData')]
+)
+def datatest2(selectedData):
+    return json.dumps(selectedData, indent=2)
+
+
+
+
+
+
+
 #BA1
 @app.callback(
-    Output('outputBA4', 'children'),
+    Output('scatterA', 'figure'),
     [Input('radioBA2group','value'),
-    Input('radioBA2numerical','value')]
+    Input('radioBA2numerical','value'),
+    Input('scatterA', 'selectedData')]
 )
-def update_graphBA2(group_sel, numerical):
-    graph = build_graphBA1()
-    return graph
+def update_graphBA1(para1,para2, selectedData):
+    #selectedData = [3,4,56]
+    #selectedData = [i['pointIndex'] for i in selectedData["points"]]
+    #if len(selectedData) < 1: selectedData = []
+    fig = build_graphBA1([43,64,54,57,56,96,65])
+    return fig
 
 
 #BA2

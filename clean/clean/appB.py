@@ -120,7 +120,12 @@ body = html.Div([dbc.Row([
 
 
 
-
+styles = {
+    'pre': {
+        'border': 'thin lightgrey solid',
+        'overflowX': 'scroll'
+    }
+}
 
 
 
@@ -130,12 +135,33 @@ def core_layoutB():
         #dbc.Col([html.P("""middle section""")], width = 8),
         dbc.Col([
             dbc.Row([
-                dbc.Col([html.Div(id='outputBA4', children = []),outputBA1],width=7), #scatterparcat
+                dbc.Col([html.Div(dcc.Graph(id='scatterA')),outputBA1],width=7), #scatterparcat
                 dbc.Col([
                     dbc.Row([dbc.Col([outputBA2])]), #pie charts
                     dbc.Row([dbc.Col([outputBA3])]), # 3d-scatter
                 ],width=5),
             ]),
+            
+            html.Pre(id='clickdatatest', style=styles['pre']),
+            html.Pre(id='selectdatatest', style=styles['pre']), # datatable or plotly table
+            
+        ],width=8), 
+        dbc.Col([radioBA2group,
+                radioBA2numerical,
+                dropdownBA3color,
+                dropdownBA3size,
+                dropdownBA3symbol],width=2), #right band
+        ])
+    ])
+
+    """
+    body2 = html.Div([dbc.Row([
+        dbc.Col([dropdownBB1x,dropdownBB1y,*checklistBB1],width=2),
+        dbc.Col([
+            dbc.Row([dbc.Col([
+                dbc.Row([dbc.Col([outputBB1])]),
+                dbc.Row([dbc.Col([outputBB2]), dbc.Col([outputBB3]))
+            ])]),
             dbc.Row([]), # datatable or plotly table
         ],width=8), 
         dbc.Col([radioBA2group,
@@ -146,33 +172,8 @@ def core_layoutB():
         ])
     ])
     """
-    body1 = dbc.Row([
-        dbc.Col([dropdownBA1x,dropdownBA1y,*checklistBA1],width=2),
-        #dbc.Col([html.P(""""""middle section"""""")], width = 8),
-        dbc.Col([
-            dbc.Row([
-                dbc.Col([html.Div(id='outputBA4', children = [])],width=7), #scatterparcat
-                dbc.Col([
-                    dbc.Row([dbc.Col([outputBA2])]), #pie charts
-                    dbc.Row([dbc.Col([html.P([""""""thgis is where the cube should be""""""])]),dbc.Col([outputBA3])]), # 3d-scatter
-                ],width=5),
-            ]),
-            dbc.Row([]), # datatable or plotly table
-        ],width=8), 
-        dbc.Col([radioBA2group,
-                radioBA2numerical,
-                dropdownBA3color,
-                dropdownBA3size,
-                dropdownBA3symbol],width=2), #right band
-    ])
-    """
-    body2 = html.Div([
-        dbc.Row([
-            dbc.Col([outputBA1]),
-            dbc.Col([]),
-            dbc.Col([]),
-            ])
-    ])
+
+    body2 = html.Div([])
 
     return body1, body2
 
@@ -188,8 +189,56 @@ def AppB():
     return layout
 
 
-#GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH 
-def build_graphBA1():
+#GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH GRAPH
+
+#Graph BA
+
+def build_graphBA1(colorinput):
+    x_axis = "ProbPercent"
+    y_axis = "PotentialValue"
+    dff = df_num
+
+    dimensions = [dict(values=dff[label], label=label) for label in ["New","Type"]]
+
+    # Build colorscale
+    color = np.zeros(len(dff), dtype='uint8')
+    colorscale = [[0, 'gray'], [1, 'firebrick']]
+
+
+    for i in colorinput: color[i] = 1
+
+
+    # Build figure as FigureWidget
+    fig = go.FigureWidget(
+            data=[go.Scatter(x=dff[x_axis], y=dff[y_axis], customdata=[i for i in dff.index],
+            marker={'color': 'gray'}, mode='markers', selected={'marker': {'color': 'firebrick'}},
+            
+            unselected={'marker': {'opacity': 0.3}}),
+
+            go.Parcats(
+                domain={'y': [0, 0.4]}, dimensions=dimensions,
+                line={'colorscale': colorscale, 'cmin': 0,
+                    'cmax': 1, 'color': color, 'shape': 'hspline'})
+        ])
+
+    fig.update_layout(
+                height=800, xaxis={'title': '{}'.format(x_axis)},
+                yaxis={'title': '{}'.format(y_axis), 'domain': [0.6, 1]},
+                dragmode='lasso', hovermode='closest',)
+    #fig.data[1].line.color = color
+
+    fig.update_layout(
+        margin=dict(l=0, r=15, t=0, b=10),
+        #paper_bgcolor="lightcyan",
+        #plot_bgcolor='lightsteelblue' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+    )
+
+    
+    
+    return fig
+
+
+def build_graphBA1real():
 
     x_axis ="ProbPercent"
 
@@ -404,3 +453,46 @@ def build_graphBA3(color_sel,size_sel,symbol_sel,PV_min,PV_max,PP_min,PP_max,EV_
     graph = dcc.Graph(id='scatter3d', figure = fig)
 
     return graph
+
+
+
+
+#Graph BB
+
+def build_graphBB1(dff,x_axis, y_axis,mode,trendline, marginal_sel,color,facet):
+    if marginal_sel == "None": marginal_sel = None
+    if color == "None": color = None
+    if facet == "None": facet = None
+    
+    if trendline == "Ordinary Least Squares Regression": trendline = 'ols'
+    elif trendline == "Locally Weighted Smoothing": trendline = 'lowess'
+    
+
+    fig = go.Figure()
+    if mode == "Scatter":
+        fig = px.scatter(dff, x=x_axis, y=y_axis, color=color, facet_col=facet, facet_col_wrap=3,
+                        marginal_y=marginal_sel, marginal_x=marginal_sel, trendline="ols")
+    if mode == "Heat":
+        fig = px.density_heatmap(dff, x=x_axis, y=y_axis, marginal_x=marginal_sel, marginal_y=marginal_sel)
+    if mode == "Density":
+        #fig = px.density_contour(df, x="total_bill", y="tip", marginal_x=marginal_x, marginal_y=marginal_y)
+        fig = px.density_contour(dff, x=x_axis, y=y_axis, color=color, marginal_x=marginal_sel,
+                                 marginal_y=marginal_sel, trendline=trendline)
+    if mode == "Density Fill":
+        fig = px.density_contour(dff, x=x_axis, y=y_axis)
+        fig.update_traces(contours_coloring="fill", contours_showlabels = True)
+    
+    
+    fig.update_layout(
+            #margin=dict(l=0, r=0, t=0, b=0),
+            #paper_bgcolor="lightcyan",
+            #plot_bgcolor='gainsboro' #gainsboro, lightsteelblue lightsalmon lightgreen lightpink lightcyan lightblue black
+        )
+
+
+    graph = dcc.Graph(id="scatterB", figure=fig)
+
+
+    return graph
+    
+
