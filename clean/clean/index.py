@@ -166,22 +166,25 @@ def datatest2(selectedData):
 
 
 
-
-
-
-
 #BA1
 @app.callback(
     Output('scatterA', 'figure'),
     [Input('radioBA2group','value'),
     Input('radioBA2numerical','value'),
-    Input('scatterA', 'selectedData')]
+    Input('scatterA', 'selectedData'),
+    Input('scatterA', 'clickData')]
 )
-def update_graphBA1(para1,para2, selectedData):
-    #selectedData = [3,4,56]
-    #selectedData = [i['pointIndex'] for i in selectedData["points"]]
-    #if len(selectedData) < 1: selectedData = []
-    fig = build_graphBA1([43,64,54,57,56,96,65])
+def update_graphBA1(para1,para2, selectedData,clickData):
+    selected_points = []
+    if selectedData:
+        for selected_data in [selectedData]:
+            if selected_data and selected_data['points']:
+                selected_points = [p['pointIndex'] for p in selected_data['points']]
+    elif clickData:
+        for click_data in [clickData]:
+            if clickData and clickData['points']:
+                selected_points = [p['pointIndex'] for p in clickData['points']]
+    fig = build_graphBA1(selected_points)
     return fig
 
 
@@ -267,23 +270,22 @@ def display_selected_data(selectedData):
 
 
 
-@app.callback(
-    Output('A4', 'children'),
-    [Input('datatableA4', "page_current"),
-     Input('datatableA4', "page_size"),
-     Input('datatableA4', 'sort_by'),
-     Input('datatableA4', 'filter_query'),
-     Input('timeline', 'selectedData')])
-def update_table(page_current, page_size, sort_by, filter, selectedData):
-    idlist = []
-    for i in selectedData['points']:
-        idlist.append(i['customdata'])
-    idlist = [val for sublist in idlist for val in sublist]
-    dff =  df_num[df_num.index.isin(idlist)]
-    
-    dff = df_num
 
+@app.callback(
+    Output('datatableBA', 'data'),
+    [Input('datatableBA', "page_current"),
+     Input('datatableBA', "page_size"),
+     Input('datatableBA', 'sort_by'),
+     Input('datatableBA', 'filter_query'),
+     Input('scatterA', 'selectedData')])
+def update_table(page_current, page_size, sort_by, filter, selectedData):
     filtering_expressions = filter.split(' && ')
+    selected_points = []
+    if selectedData:
+        for selected_data in [selectedData]:
+            if selected_data and selected_data['points']:
+                selected_points = [p['pointIndex'] for p in selected_data['points']]
+    dff = df_num.iloc[[*selected_points]]
     for filter_part in filtering_expressions:
         col_name, operator, filter_value = split_filter_part(filter_part)
 
@@ -309,104 +311,12 @@ def update_table(page_current, page_size, sort_by, filter, selectedData):
 
     page = page_current
     size = page_size
+    return dff.iloc[page * size: (page + 1) * size].to_dict('records')
 
 
-
-    data= dff.iloc[page * size: (page + 1) * size].to_dict('records')
-
-
-    PAGE_SIZE = 5
-
-    datatableA4 = html.Div([dash_table.DataTable(
-        id='datatableA4',
-        columns=[
-            {'name': i, 'id': i, 'deletable': True} for i in sorted(df_num.columns)
-        ],
-        data=data,
-        page_current= 0,
-        page_size= PAGE_SIZE,
-        page_action='custom',
-
-        filter_action='custom',
-        filter_query='',
-
-        sort_action='custom',
-        sort_mode='multi',
-        sort_by=[]
-        )
-    ])
-
-
-
-    return datatableA4 #json.dumps(dff.iloc[page * size: (page + 1) * size].to_dict('records'), indent=4, sort_keys=True, default=str)
 
 
 
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-#@app.callback(
-#    dash.dependencies.Output('sliderBx', 'children'),
-#    [dash.dependencies.Input('dropdownBx', 'options')])
-#def set_optionsBx(options):
-#    selected = options[0]['value']
-#    max_value = df_num[selected].max()
-#    rangesliderx = html.Div([
-#        dcc.RangeSlider(
-#            id = 'sliderBxx',
-#            min=0,
-#            max=max_value,
-#            step=max_value / 100,
-#            marks={
-#                0: '0',
-#                max_value *(1/4) : '{}'.format(str(max_value/4)), #'{}'.format(max_value *(1/4)),
-#                max_value *(2/4) : '{}'.format(str(max_value *(2/4))),
-#                max_value *(3/4) : '{}'.format(str(max_value *(3/4))),
-#                max_value  : '{}'.format(str(max_value)),
-#            },
-#            value=[0,max_value]
-#        )
-#    ])
-#    return rangesliderx
-
-
-
-
-@app.callback(Output(component_id='sliderBx', component_property='min'),
-               Output(component_id='sliderBx', component_property='max'),
-               Output(component_id='sliderBx', component_property='step'),
-               #Output(component_id='sliderBx', component_property='marks')
-               [Input(component_id='dropdownBx', component_property='options')])
-def set_optionsBx(options):
-    selected = options[0]['value']
-    max_value = df_num[selected].max()
-
-    minimum = 0
-    maximum = max_value
-    step = max_value / 100
-    
-    return minimum, maximum, step
-    
-
-
-
-
-@app.callback(
-    dash.dependencies.Output('dropdownA3numgroup', 'value'),
-    [dash.dependencies.Input('dropdownA3numgroup', 'options')])
-def set_optionsA3b(available_options):
-    return available_options[0]['value']
-"""

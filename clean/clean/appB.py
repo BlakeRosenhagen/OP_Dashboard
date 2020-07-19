@@ -13,6 +13,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
 import dash_daq as daq
+import dash_table
 # Sub Modules
 from navbar import Navbar
 from prep import get_data
@@ -82,6 +83,29 @@ dropdownBA3symbol = dcc.Dropdown(id='dropdownBA3symbol', options=[{'label': i, '
 
 outputBA3 = html.Div(id='outputBA3', children=[],)
 
+
+datatableBA = dash_table.DataTable(
+    id='datatableBA',
+    columns=[
+        {'name': i, 'id': i, 'deletable': True} for i in sorted(df.columns)
+    ],
+    page_current= 0,
+    page_size= 10,
+    page_action='custom',
+
+    filter_action='custom',
+    filter_query='',
+
+    sort_action='custom',
+    sort_mode='multi',
+    sort_by=[]
+)
+
+
+
+
+
+
 # Layout B Components
 dropdownBB1dimension = dcc.Dropdown(id='dropdownBB1dimension', children=[],)
 
@@ -141,7 +165,10 @@ def core_layoutB():
                     dbc.Row([dbc.Col([outputBA3])]), # 3d-scatter
                 ],width=5),
             ]),
-            
+    
+            dbc.Row([dbc.Col([datatableBA])]),
+
+
             html.Pre(id='clickdatatest', style=styles['pre']),
             html.Pre(id='selectdatatest', style=styles['pre']), # datatable or plotly table
             
@@ -220,6 +247,8 @@ def build_graphBA1(colorinput):
                 line={'colorscale': colorscale, 'cmin': 0,
                     'cmax': 1, 'color': color, 'shape': 'hspline'})
         ])
+
+    fig.data[0].selectedpoints = colorinput
 
     fig.update_layout(
                 height=800, xaxis={'title': '{}'.format(x_axis)},
